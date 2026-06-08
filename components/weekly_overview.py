@@ -12,10 +12,35 @@ def weekly_overview(
 <div class="weekly-strip {animation_class}">
 <div class="weekly-label">LAST 7 DAYS</div>
 <div class="weekly-grid">
-<div><div class="weekly-title">Weight</div><div class="weekly-value">{weight_change}</div></div>
-<div><div class="weekly-title">Runs</div><div class="weekly-value">{run_distance}</div></div>
-<div><div class="weekly-title">Boxing</div><div class="weekly-value">{boxing_sessions}</div></div>
-<div><div class="weekly-title">Gym</div><div class="weekly-value">{gym_sessions}</div></div>
+
+<div>
+    <div class="weekly-title">Weight</div>
+    <div class="weekly-value">
+        <span class="count-up-number" data-final="{weight_change}">{weight_change}</span>
+    </div>
+</div>
+
+<div>
+    <div class="weekly-title">Runs</div>
+    <div class="weekly-value">
+        <span class="count-up-number" data-final="{run_distance}">{run_distance}</span>
+    </div>
+</div>
+
+<div>
+    <div class="weekly-title">Boxing</div>
+    <div class="weekly-value">
+        <span class="count-up-number" data-final="{boxing_sessions}">{boxing_sessions}</span>
+    </div>
+</div>
+
+<div>
+    <div class="weekly-title">Gym</div>
+    <div class="weekly-value">
+        <span class="count-up-number" data-final="{gym_sessions}">{gym_sessions}</span>
+    </div>
+</div>
+
 </div>
 </div>
 """

@@ -27,7 +27,9 @@ def metric_card(
 <div class="custom-metric-card {animation_class}">
 <img class="metric-card-icon" src="data:image/png;base64,{icon_base64}" alt="{title} icon">
 <div class="metric-card-title">{title}</div>
-<div class="metric-card-value">{value}</div>
+<div class="metric-card-value">
+    <span class="count-up-number" data-final="{value}">{value}</span>
+</div>
 <div class="metric-card-delta">{delta}</div>
 </div>
 """

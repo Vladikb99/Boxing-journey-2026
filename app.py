@@ -2,6 +2,7 @@ import base64
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from components.metric_card import metric_card
 from components.quote_card import quote_card
@@ -182,6 +183,7 @@ st.markdown('<div class="dashboard-wrapper">', unsafe_allow_html=True)
 
 # HERO
 logo_trace_delay = "3.85s" if show_quote_splash else "0.15s"
+countup_delay_ms = 4200 if show_quote_splash else 500
 
 glove_trace_path = """
 M 103.6 28.5
@@ -363,6 +365,95 @@ quote_card(
     quote,
     author,
     animation_class=f"fade-in fade-delay-5 {splash_wait_class}",
+)
+
+components.html(
+    f"""
+<script>
+(function () {{
+    function parseValue(text) {{
+        const match = text.match(/-?\\d+(?:[.,]\\d+)?/);
+
+        if (!match) {{
+            return null;
+        }}
+
+        const numberText = match[0].replace(",", ".");
+        const finalValue = parseFloat(numberText);
+
+        if (Number.isNaN(finalValue)) {{
+            return null;
+        }}
+
+        const decimals = numberText.includes(".")
+            ? numberText.split(".")[1].length
+            : 0;
+
+        return {{
+            finalValue: finalValue,
+            decimals: decimals,
+            prefix: text.slice(0, match.index),
+            suffix: text.slice(match.index + match[0].length)
+        }};
+    }}
+
+    function animateNumber(element) {{
+        if (element.dataset.counted === "true") {{
+            return;
+        }}
+
+        const originalText = element.dataset.final || element.textContent.trim();
+        const parsed = parseValue(originalText);
+
+        if (!parsed) {{
+            return;
+        }}
+
+        element.dataset.counted = "true";
+
+        const duration = 900;
+        const startTime = performance.now();
+
+        function easeOutCubic(t) {{
+            return 1 - Math.pow(1 - t, 3);
+        }}
+
+        function frame(now) {{
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeOutCubic(progress);
+
+            const currentValue = parsed.finalValue * easedProgress;
+            const formattedValue = currentValue.toFixed(parsed.decimals);
+
+            element.textContent = parsed.prefix + formattedValue + parsed.suffix;
+
+            if (progress < 1) {{
+                requestAnimationFrame(frame);
+            }} else {{
+                element.textContent = originalText;
+            }}
+        }}
+
+        element.textContent =
+            parsed.prefix +
+            (0).toFixed(parsed.decimals) +
+            parsed.suffix;
+
+        requestAnimationFrame(frame);
+    }}
+
+    function runCountUp() {{
+        const parentDocument = window.parent.document;
+        const numbers = parentDocument.querySelectorAll(".count-up-number");
+        numbers.forEach(animateNumber);
+    }}
+
+    setTimeout(runCountUp, {countup_delay_ms});
+}})();
+</script>
+""",
+    height=0,
 )
 
 st.markdown("</div>", unsafe_allow_html=True)
