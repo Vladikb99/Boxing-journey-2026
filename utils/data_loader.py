@@ -128,6 +128,8 @@ def save_weight(weight: float) -> None:
     df = pd.concat([df, new_row], ignore_index=True)
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["weight_kg"] = pd.to_numeric(df["weight_kg"], errors="coerce")
+
     df = df.dropna(subset=["date", "weight_kg"])
     df = df.sort_values("date").reset_index(drop=True)
 
@@ -142,6 +144,49 @@ def delete_latest_weight() -> bool:
         return False
 
     df = df.iloc[:-1].copy()
+
+    if not df.empty:
+        df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+
+    df.to_csv("data/weight.csv", index=False)
+
+    return True
+
+
+def update_weight_entry(row_index: int, new_date, new_weight: float) -> bool:
+    df = load_weight_data().reset_index(drop=True)
+
+    if df.empty:
+        return False
+
+    if row_index < 0 or row_index >= len(df):
+        return False
+
+    df.loc[row_index, "date"] = pd.Timestamp(new_date)
+    df.loc[row_index, "weight_kg"] = float(new_weight)
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["weight_kg"] = pd.to_numeric(df["weight_kg"], errors="coerce")
+
+    df = df.dropna(subset=["date", "weight_kg"])
+    df = df.sort_values("date").reset_index(drop=True)
+
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+    df.to_csv("data/weight.csv", index=False)
+
+    return True
+
+
+def delete_weight_entry(row_index: int) -> bool:
+    df = load_weight_data().reset_index(drop=True)
+
+    if df.empty:
+        return False
+
+    if row_index < 0 or row_index >= len(df):
+        return False
+
+    df = df.drop(index=row_index).reset_index(drop=True)
 
     if not df.empty:
         df["date"] = df["date"].dt.strftime("%Y-%m-%d")

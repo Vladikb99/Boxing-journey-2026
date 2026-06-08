@@ -152,7 +152,9 @@ if skip_splash:
 if "quote_splash_seen" not in st.session_state:
     st.session_state.quote_splash_seen = False
 
-if not st.session_state.quote_splash_seen:
+show_quote_splash = not st.session_state.quote_splash_seen
+
+if show_quote_splash:
     st.markdown(
         f"""
 <div class="quote-splash">
@@ -171,6 +173,7 @@ if not st.session_state.quote_splash_seen:
 
     st.session_state.quote_splash_seen = True
 
+splash_wait_class = "splash-wait" if show_quote_splash else ""
 
 # PAGE
 
@@ -178,11 +181,47 @@ st.markdown('<div class="dashboard-wrapper">', unsafe_allow_html=True)
 
 
 # HERO
+logo_trace_delay = "3.85s" if show_quote_splash else "0.15s"
 
+glove_trace_path = """
+M 103.6 28.5
+L 93.4 33.8
+L 86.4 45.5
+L 83.1 62.7
+L 84.9 79.9
+L 80.8 88.8
+L 78.9 99.1
+L 81.8 102.6
+L 112.4 110.6
+L 118.0 105.0
+L 121.6 94.0
+L 121.2 90.4
+L 132.5 81.1
+L 138.9 73.2
+L 142.7 64.5
+L 143.4 56.7
+L 141.4 52.1
+L 135.8 49.1
+L 135.5 40.4
+L 131.1 35.1
+L 114.4 29.4
+Z
+"""
 st.markdown(
     f"""
 <div class="hero-container">
+<div class="hero-logo-wrap {splash_wait_class}">
 <img class="hero-logo" src="data:image/png;base64,{logo_base64}" alt="Boxing Journey logo">
+
+<svg class="hero-logo-trace" viewBox="0 0 220 147" aria-hidden="true">
+    <path
+        class="hero-trace-path"
+        d="{glove_trace_path}"
+        pathLength="100"
+    />
+</svg>
+<span class="hero-trace-dot"></span>
+</div>
 <div>
 <div class="hero-title">{APP_NAME} <span>{APP_YEAR}</span></div>
 <div class="hero-subtitle">{greeting}</div>
@@ -215,6 +254,7 @@ weekly_overview(
     last_7_day_run_distance,
     last_7_day_boxing_sessions,
     last_7_day_gym_sessions,
+    animation_class=f"fade-in fade-delay-1 {splash_wait_class}",
 )
 
 st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
@@ -226,21 +266,23 @@ col1, spacer1, col2 = st.columns([1, 0.06, 1])
 
 with col1:
     metric_card(
-        title="Weight",
-        value=weight_value,
-        delta=weight_change,
-        icon_path="assets/logos/weight_logo_premium.png",
-        page_url="/weight",
-    )
+    title="Weight",
+    value=weight_value,
+    delta=weight_change,
+    icon_path="assets/logos/weight_logo_premium.png",
+    page_url="/weight",
+    animation_class=f"fade-in fade-delay-2 {splash_wait_class}",
+)
 
 with col2:
     metric_card(
-        title="Last Run",
-        value=last_run_value,
-        delta=last_run_delta,
-        icon_path="assets/logos/running_logo_premium.png",
-        page_url="/running",
-    )
+    title="Last Run",
+    value=last_run_value,
+    delta=last_run_delta,
+    icon_path="assets/logos/running_logo_premium.png",
+    page_url="/running",
+    animation_class=f"fade-in fade-delay-2 {splash_wait_class}",
+)
 
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
 
@@ -248,21 +290,23 @@ col3, spacer2, col4 = st.columns([1, 0.06, 1])
 
 with col3:
     metric_card(
-        title="Boxing",
-        value=boxing_card_value,
-        delta=boxing_card_note,
-        icon_path="assets/logos/boxing_logo_premium.png",
-        page_url="/boxing",
-    )
+    title="Boxing",
+    value=boxing_card_value,
+    delta=boxing_card_note,
+    icon_path="assets/logos/boxing_logo_premium.png",
+    page_url="/boxing",
+    animation_class=f"fade-in fade-delay-3 {splash_wait_class}",
+)
 
 with col4:
     metric_card(
-        title="Gym",
-        value=gym_card_value,
-        delta=gym_card_note,
-        icon_path="assets/logos/gym_logo_premium.png",
-        page_url="/gym",
-    )
+    title="Gym",
+    value=gym_card_value,
+    delta=gym_card_note,
+    icon_path="assets/logos/gym_logo_premium.png",
+    page_url="/gym",
+    animation_class=f"fade-in fade-delay-3 {splash_wait_class}",
+)
 
 st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
@@ -271,7 +315,7 @@ st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 st.markdown(
     f"""
-<div class="home-goal-card">
+<div class="home-goal-card fade-in fade-delay-4 {splash_wait_class}">
 <div class="home-goal-eyebrow">GOAL PROGRESS</div>
 
 <div class="home-goal-grid">
@@ -315,6 +359,10 @@ st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 # QUOTE
 
-quote_card(quote, author)
+quote_card(
+    quote,
+    author,
+    animation_class=f"fade-in fade-delay-5 {splash_wait_class}",
+)
 
 st.markdown("</div>", unsafe_allow_html=True)

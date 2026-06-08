@@ -45,17 +45,127 @@ section.main > div {
     margin-bottom: 8px;
 }
 
+/* Logo wrapper */
+.hero-logo-wrap {
+    --logo-delay: 0.15s;
+    width: 220px;
+    height: 147px;
+    flex-shrink: 0;
+    margin-right: -60px;
+    position: relative;
+    overflow: visible;
+}
+
+/* Makes the logo animation wait until the quote splash is finished */
+.hero-logo-wrap.splash-wait {
+    --logo-delay: 3.85s;
+}
+
+/* Main logo */
 .hero-logo {
     width: 220px;
     height: auto;
-    flex-shrink: 0;
-    margin-right: -60px;
+    position: relative;
+    z-index: 1;
     filter: drop-shadow(0 0 12px rgba(201, 162, 39, 0.18));
-    transition: 0.25s ease;
+    transition: filter 0.25s ease, transform 0.25s ease;
 }
 
-.hero-logo:hover {
-    filter: drop-shadow(0 0 20px rgba(201, 162, 39, 0.45));
+/* SVG trace layer on top of the glove */
+.hero-logo-trace {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 220px;
+    height: 147px;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* The glowing line that stays behind the moving point */
+.hero-trace-path {
+    fill: none;
+    stroke: rgba(255, 221, 95, 1);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 310;
+    stroke-dashoffset: 310;
+    opacity: 0;
+    filter:
+        drop-shadow(0 0 3px rgba(255, 221, 95, 0.95))
+        drop-shadow(0 0 8px rgba(201, 162, 39, 0.65));
+    animation: gloveTraceLine 4.2s ease-out var(--logo-delay) 1 forwards;
+}
+
+/* The small gold point moving around the glove */
+.hero-trace-dot {
+    fill: rgba(255, 221, 95, 1);
+    opacity: 0;
+    filter:
+        drop-shadow(0 0 6px rgba(255, 221, 95, 1))
+        drop-shadow(0 0 14px rgba(201, 162, 39, 0.90))
+        drop-shadow(0 0 28px rgba(201, 162, 39, 0.50));
+    animation: gloveDotFade 4.2s ease-out var(--logo-delay) 1 forwards;
+}
+
+/* Small hover effect */
+.hero-logo-wrap:hover .hero-logo {
+    transform: scale(1.025);
+    filter:
+        drop-shadow(0 0 10px rgba(201, 162, 39, 0.65))
+        drop-shadow(0 0 26px rgba(201, 162, 39, 0.28));
+}
+
+/* Draws the glowing trace, holds it, then fades it out */
+@keyframes gloveTraceLine {
+    0% {
+        stroke-dashoffset: 310;
+        opacity: 0;
+    }
+
+    8% {
+        opacity: 1;
+    }
+
+    62% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+
+    68% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+
+    100% {
+        stroke-dashoffset: 0;
+        opacity: 0;
+    }
+}
+
+/* Moves the light point along the same path */
+@keyframes gloveDotFade {
+    0% {
+        opacity: 0;
+    }
+
+    8% {
+        opacity: 1;
+    }
+
+    62% {
+        opacity: 1;
+    }
+
+    72% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 .hero-title {
@@ -103,6 +213,82 @@ section.main > div {
 
 .section-gap-large {
     height: 22px;
+}
+
+/* FADE-IN ANIMATIONS */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    opacity: 0;
+    animation-name: fadeUp;
+    animation-duration: 0.65s;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
+}
+
+.fade-delay-1 {
+    animation-delay: 0.05s;
+}
+
+.fade-delay-2 {
+    animation-delay: 0.15s;
+}
+
+.fade-delay-3 {
+    animation-delay: 0.25s;
+}
+
+.fade-delay-4 {
+    animation-delay: 0.35s;
+}
+
+.fade-delay-5 {
+    animation-delay: 0.45s;
+}
+
+/* Used only when the quote splash is visible */
+.splash-wait.fade-delay-1 {
+    animation-delay: 3.85s;
+}
+
+.splash-wait.fade-delay-2 {
+    animation-delay: 4.00s;
+}
+
+.splash-wait.fade-delay-3 {
+    animation-delay: 4.15s;
+}
+
+.splash-wait.fade-delay-4 {
+    animation-delay: 4.30s;
+}
+
+.splash-wait.fade-delay-5 {
+    animation-delay: 4.45s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fade-in {
+        opacity: 1;
+        animation: none;
+        transform: none;
+    }
+
+    .hero-logo-wrap {
+        animation: none;
+        transform: none;
+    }
 }
 
 /* WEEKLY OVERVIEW */
@@ -862,4 +1048,148 @@ header {
     .home-goal-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* WEIGHT MANAGE BUTTON */
+
+.weight-manage-button {
+    position: fixed;
+    right: 28px;
+    bottom: 26px;
+    z-index: 1000;
+
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(201, 162, 39, 0.28);
+    border-radius: 999px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #C9A227 !important;
+    background: rgba(11, 11, 11, 0.72);
+    backdrop-filter: blur(8px);
+
+    text-decoration: none !important;
+    font-size: 18px;
+    font-weight: 700;
+
+    opacity: 0.28;
+    transition: 0.22s ease;
+}
+
+.weight-manage-button:hover {
+    opacity: 1;
+    border-color: rgba(201, 162, 39, 0.75);
+    background: rgba(201, 162, 39, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(201, 162, 39, 0.08);
+}
+
+.close-manage-link {
+    display: inline-block;
+    margin-top: 18px;
+    color: rgba(201, 162, 39, 0.9) !important;
+    text-decoration: none !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.close-manage-link:hover {
+    color: #F0D36A !important;
+}
+
+/* SELECTED ENTRY CARD */
+
+.selected-entry-card {
+    margin-top: 18px;
+    margin-bottom: 22px;
+    padding: 18px 20px;
+    border: 1px solid rgba(201, 162, 39, 0.22);
+    border-radius: 14px;
+    background: rgba(201, 162, 39, 0.045);
+}
+
+.selected-entry-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    color: #C9A227;
+    margin-bottom: 8px;
+}
+
+.selected-entry-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #F5F5F5;
+}
+
+/* FLOATING WEIGHT MANAGER BUTTON */
+
+button[title="Manage weight entries"] {
+    position: fixed;
+    right: 28px;
+    bottom: 26px;
+    z-index: 1000;
+
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(201, 162, 39, 0.28) !important;
+    border-radius: 999px !important;
+
+    color: #C9A227 !important;
+    background: rgba(11, 11, 11, 0.72) !important;
+    backdrop-filter: blur(8px);
+
+    font-size: 18px !important;
+    font-weight: 700 !important;
+
+    opacity: 0.28;
+    transition: 0.22s ease;
+}
+
+button[title="Manage weight entries"]:hover {
+    opacity: 1;
+    border-color: rgba(201, 162, 39, 0.75) !important;
+    background: rgba(201, 162, 39, 0.08) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(201, 162, 39, 0.08);
+}
+
+/* FLOATING WEIGHT MANAGER BUTTON */
+
+.weight-manage-button {
+    position: fixed;
+    right: 28px;
+    bottom: 26px;
+    z-index: 1000;
+
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(201, 162, 39, 0.28);
+    border-radius: 999px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #C9A227 !important;
+    background: rgba(11, 11, 11, 0.72);
+    backdrop-filter: blur(8px);
+
+    text-decoration: none !important;
+    font-size: 18px;
+    font-weight: 700;
+
+    opacity: 0.28;
+    transition: 0.22s ease;
+}
+
+.weight-manage-button:hover {
+    opacity: 1;
+    border-color: rgba(201, 162, 39, 0.75);
+    background: rgba(201, 162, 39, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(201, 162, 39, 0.08);
 }

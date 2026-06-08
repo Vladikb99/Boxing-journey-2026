@@ -1,9 +1,9 @@
 import streamlit as st
 
 
-def quote_card(quote: str, author: str) -> None:
+def quote_card(quote: str, author: str, animation_class: str = "") -> None:
     html = f"""
-<div class="premium-quote-card">
+<div class="premium-quote-card {animation_class}">
 <div class="quote-mark-open">❝</div>
 <div class="premium-quote-body">
 <div class="premium-quote-text">{quote}</div>

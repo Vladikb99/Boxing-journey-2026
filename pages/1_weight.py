@@ -4,8 +4,13 @@ import streamlit as st
 
 from components.home_button import home_button
 from components.page_header import page_header
+from utils.data_loader import (
+    delete_weight_entry,
+    load_weight_data,
+    save_weight,
+    update_weight_entry,
+)
 from utils.settings_loader import load_settings
-from utils.data_loader import load_weight_data, save_weight, delete_latest_weight
 from utils.style_loader import load_css
 
 
@@ -14,15 +19,30 @@ load_css("assets/styles.css")
 page_header(title="Weight")
 home_button()
 
+if "open_weight_manager" not in st.session_state:
+    st.session_state.open_weight_manager = False
+
+if st.query_params.get("manage_weight") == "true":
+    st.session_state.open_weight_manager = True
+
+st.markdown(
+    """
+<a class="weight-manage-button" href="/weight?manage_weight=true" target="_self" title="Manage weight entries">
+✎
+</a>
+""",
+    unsafe_allow_html=True,
+)
+
 st.markdown('<div class="page-wrapper">', unsafe_allow_html=True)
 
 weight_df = load_weight_data()
-
 settings = load_settings()
 
-GOAL_WEIGHT = settings["goal_weight"]
-START_WEIGHT = settings["start_weight"]
-HEIGHT_M = settings["height_m"]
+GOAL_WEIGHT = float(settings["goal_weight"])
+START_WEIGHT = float(settings["start_weight"])
+HEIGHT_M = float(settings["height_m"])
+
 
 if weight_df.empty:
     st.warning("No weight data found yet.")
@@ -59,8 +79,13 @@ else:
 remaining_kg = current_weight - GOAL_WEIGHT
 bmi = current_weight / (HEIGHT_M ** 2)
 
-progress = (START_WEIGHT - current_weight) / (START_WEIGHT - GOAL_WEIGHT)
+if START_WEIGHT == GOAL_WEIGHT:
+    progress = 1.0 if current_weight <= GOAL_WEIGHT else 0.0
+else:
+    progress = (START_WEIGHT - current_weight) / (START_WEIGHT - GOAL_WEIGHT)
+
 progress = max(0.0, min(progress, 1.0))
+progress_percent = progress * 100
 
 total_change = current_weight - start_weight
 
@@ -71,7 +96,117 @@ average_daily_change = total_change / days_between
 
 days_logged = len(weight_df)
 
-progress_percent = progress * 100
+
+@st.dialog("Manage weight entries", width="large")
+def weight_manager_dialog() -> None:
+    manage_df = load_weight_data().reset_index(drop=True)
+
+    if manage_df.empty:
+        st.warning("No weight entries available.")
+
+        if st.button("Close", use_container_width=True):
+            st.session_state.open_weight_manager = False
+            st.query_params.clear()
+            st.rerun()
+
+        return
+
+    st.markdown(
+        """
+<div class="form-section-title">MANAGE WEIGHT ENTRIES</div>
+<div class="form-section-subtitle">Edit or delete logged weight entries.</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    entry_options = list(manage_df.index[::-1])
+
+    selected_index = st.selectbox(
+        "Select entry",
+        options=entry_options,
+        format_func=lambda index: (
+            f"{manage_df.loc[index, 'date'].strftime('%Y-%m-%d')} — "
+            f"{manage_df.loc[index, 'weight_kg']:.1f} kg"
+        ),
+    )
+
+    selected_row = manage_df.loc[selected_index]
+    selected_date = selected_row["date"].date()
+    selected_weight = float(selected_row["weight_kg"])
+
+    st.markdown(
+        f"""
+<div class="selected-entry-card">
+<div class="selected-entry-label">SELECTED ENTRY</div>
+<div class="selected-entry-value">{selected_date} — {selected_weight:.1f} kg</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    with st.form(f"edit_weight_entry_{selected_index}"):
+        edited_date = st.date_input(
+            "Date",
+            value=selected_date,
+        )
+
+        edited_weight = st.number_input(
+            "Weight (kg)",
+            min_value=30.0,
+            max_value=200.0,
+            value=selected_weight,
+            step=0.1,
+        )
+
+        save_changes = st.form_submit_button(
+            "Save changes",
+            use_container_width=True,
+        )
+
+        if save_changes:
+            updated = update_weight_entry(
+                row_index=selected_index,
+                new_date=edited_date,
+                new_weight=edited_weight,
+            )
+
+            if updated:
+                st.session_state.open_weight_manager = False
+                st.query_params.clear()
+                st.success("Weight entry updated.")
+                st.rerun()
+            else:
+                st.warning("Could not update entry.")
+
+    st.divider()
+
+    st.warning("Deleting an entry is permanent. Use this only if the entry was logged incorrectly.")
+
+    confirm_delete = st.checkbox("Confirm delete selected entry")
+
+    if st.button(
+        "Delete selected entry",
+        use_container_width=True,
+        disabled=not confirm_delete,
+    ):
+        deleted = delete_weight_entry(selected_index)
+
+        if deleted:
+            st.session_state.open_weight_manager = False
+            st.query_params.clear()
+            st.success("Weight entry deleted.")
+            st.rerun()
+        else:
+            st.warning("Could not delete entry.")
+
+    if st.button("Close", use_container_width=True):
+        st.session_state.open_weight_manager = False
+        st.query_params.clear()
+        st.rerun()
+
+
+if st.session_state.open_weight_manager:
+    weight_manager_dialog()
 
 
 # PREMIUM STATUS CARD

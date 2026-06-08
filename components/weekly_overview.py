@@ -6,9 +6,10 @@ def weekly_overview(
     run_distance: str,
     boxing_sessions: str,
     gym_sessions: str,
+    animation_class: str = "",
 ) -> None:
     html = f"""
-<div class="weekly-strip">
+<div class="weekly-strip {animation_class}">
 <div class="weekly-label">LAST 7 DAYS</div>
 <div class="weekly-grid">
 <div><div class="weekly-title">Weight</div><div class="weekly-value">{weight_change}</div></div>
