@@ -62,6 +62,13 @@ section.main > div {
     margin-bottom: 28px;
 }
 
+.hero-date {
+    font-size: 13px;
+    color: rgba(245, 245, 245, 0.55);
+    margin-top: -20px;
+    letter-spacing: 0.4px;
+}
+
 .hero-divider {
     height: 1px;
     width: 100%;

@@ -19,6 +19,7 @@ from utils.calculations import calculate_weight_change
 from utils.data_loader import load_weight_data, get_latest_weight
 from utils.quote_loader import get_quote_of_the_day
 from utils.style_loader import load_css
+from utils.date_utils import get_greeting, get_today_label
 
 
 st.set_page_config(
@@ -37,6 +38,8 @@ weight = f"{current_weight:.1f} kg"
 weight_change = calculate_weight_change(weight_df)
 
 quote, author = get_quote_of_the_day()
+greeting = get_greeting()
+today_label = get_today_label()
 
 with open("assets/logos/boxing_logo_premium.png", "rb") as image:
     logo_base64 = base64.b64encode(image.read()).decode()
@@ -64,7 +67,8 @@ st.markdown(
 <img class="hero-logo" src="data:image/png;base64,{logo_base64}" alt="Boxing Journey logo">
 <div>
 <div class="hero-title">{APP_NAME} <span>{APP_YEAR}</span></div>
-<div class="hero-subtitle">Welcome back, Vladik.</div>
+<div class="hero-subtitle">{greeting}</div>
+<div class="hero-date">{today_label}</div>
 </div>
 </div>
 """,
