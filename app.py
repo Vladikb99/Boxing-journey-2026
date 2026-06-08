@@ -15,11 +15,23 @@ from config import (
     DEFAULT_GYM_SESSIONS,
     DEFAULT_GYM_NOTE,
 )
-from utils.calculations import calculate_weight_change
-from utils.data_loader import load_weight_data, get_latest_weight
+from utils.calculations import (
+    calculate_weight_change,
+    calculate_weekly_run_distance,
+    calculate_weekly_boxing_sessions,
+    calculate_weekly_gym_sessions,
+)
+from utils.data_loader import (
+    load_weight_data,
+    get_latest_weight,
+    load_runs_data,
+    load_boxing_data,
+    load_gym_data,
+)
 from utils.quote_loader import get_quote_of_the_day
 from utils.style_loader import load_css
 from utils.date_utils import get_greeting, get_today_label
+from components.weekly_overview import weekly_overview
 
 
 st.set_page_config(
@@ -32,10 +44,32 @@ load_css("assets/styles.css")
 st.markdown('<div class="dashboard-wrapper">', unsafe_allow_html=True)
 
 weight_df = load_weight_data()
+runs_df = load_runs_data()
+boxing_df = load_boxing_data()
+gym_df = load_gym_data()
 
 current_weight = get_latest_weight()
 weight = f"{current_weight:.1f} kg"
 weight_change = calculate_weight_change(weight_df)
+
+weekly_run_distance = calculate_weekly_run_distance(runs_df)
+weekly_boxing_sessions = calculate_weekly_boxing_sessions(boxing_df)
+weekly_gym_sessions = calculate_weekly_gym_sessions(gym_df)
+
+boxing_card_value = f"{weekly_boxing_sessions} this week"
+gym_card_value = f"{weekly_gym_sessions} this week"
+
+boxing_card_note = (
+    "Session logged"
+    if int(weekly_boxing_sessions) > 0
+    else "No session logged"
+)
+
+gym_card_note = (
+    "Session logged"
+    if int(weekly_gym_sessions) > 0
+    else "No session logged"
+)
 
 quote, author = get_quote_of_the_day()
 greeting = get_greeting()
@@ -77,6 +111,15 @@ st.markdown(
 
 st.markdown('<div class="hero-divider"></div>', unsafe_allow_html=True)
 
+weekly_overview(
+    weight_change,
+    weekly_run_distance,
+    weekly_boxing_sessions,
+    weekly_gym_sessions,
+)
+
+st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
+
 
 col1, spacer1, col2 = st.columns([1, 0.06, 1])
 
@@ -105,16 +148,16 @@ col3, spacer2, col4 = st.columns([1, 0.06, 1])
 with col3:
     metric_card(
         title="Boxing",
-        value=DEFAULT_BOXING_SESSIONS,
-        delta=DEFAULT_BOXING_NOTE,
+        value=boxing_card_value,
+        delta=boxing_card_note,
         icon_path="assets/logos/boxing_logo_premium.png"
     )
 
 with col4:
     metric_card(
         title="Gym",
-        value=DEFAULT_GYM_SESSIONS,
-        delta=DEFAULT_GYM_NOTE,
+        value=gym_card_value,
+        delta=gym_card_note,
         icon_path="assets/logos/gym_logo_premium.png"
     )
 
@@ -123,14 +166,27 @@ st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 
 with st.container(border=True):
-    st.write("### Goal Progress")
-    st.caption(f"{current_weight:.1f} kg → {GOAL_WEIGHT:.1f} kg")
-    st.progress(progress)
+
+    st.markdown("### Goal Progress")
+
     st.caption(
-        f"{progress * 100:.0f}% completed • "
-        f"{current_weight - GOAL_WEIGHT:.1f} kg remaining"
+        f"{current_weight:.1f} kg → {GOAL_WEIGHT:.1f} kg"
     )
 
+    st.progress(progress)
+
+    st.markdown(
+        f"""
+<div class="goal-remaining">
+{current_weight - GOAL_WEIGHT:.1f} kg remaining
+</div>
+
+<div class="goal-percent">
+{progress * 100:.0f}% completed
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 with st.container(border=True):
     st.markdown(f"""
