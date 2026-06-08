@@ -79,18 +79,31 @@ today_label = get_today_label()
 with open("assets/logos/boxing_logo_premium.png", "rb") as image:
     logo_base64 = base64.b64encode(image.read()).decode()
 
-st.markdown(f"""
+skip_splash = st.query_params.get("skip_splash") == "true"
+
+if skip_splash:
+    st.session_state.quote_splash_seen = True
+
+if "quote_splash_seen" not in st.session_state:
+    st.session_state.quote_splash_seen = False
+
+if not st.session_state.quote_splash_seen:
+    st.markdown(f"""
 <div class="quote-splash">
-    <div class="quote-splash-content">
-        <div class="quote-splash-text">
-            ❝ {quote} ❞
-        </div>
-        <div class="quote-splash-author">
-            — {author}
-        </div>
-    </div>
+<div class="quote-splash-content">
+<div class="quote-splash-text">
+❝ {quote} ❞
+</div>
+<div class="quote-splash-author">
+— {author}
+</div>
+</div>
 </div>
 """, unsafe_allow_html=True)
+
+    st.session_state.quote_splash_seen = True
+
+    st.session_state.quote_splash_seen = True
 
 progress = (START_WEIGHT - current_weight) / (START_WEIGHT - GOAL_WEIGHT)
 progress = max(0.0, min(progress, 1.0))
@@ -129,7 +142,8 @@ with col1:
         title="Weight",
         value=weight,
         delta=weight_change,
-        icon_path="assets/logos/weight_logo_premium.png"
+        icon_path="assets/logos/weight_logo_premium.png",
+        page_url="/weight",
     )
 
 with col2:
@@ -137,7 +151,8 @@ with col2:
         title="Last Run",
         value=DEFAULT_LAST_RUN,
         delta=DEFAULT_LAST_PACE,
-        icon_path="assets/logos/running_logo_premium.png"
+        icon_path="assets/logos/running_logo_premium.png",
+        page_url="/running",
     )
 
 
@@ -151,7 +166,8 @@ with col3:
         title="Boxing",
         value=boxing_card_value,
         delta=boxing_card_note,
-        icon_path="assets/logos/boxing_logo_premium.png"
+        icon_path="assets/logos/boxing_logo_premium.png",
+        page_url="/boxing",
     )
 
 with col4:
@@ -159,7 +175,8 @@ with col4:
         title="Gym",
         value=gym_card_value,
         delta=gym_card_note,
-        icon_path="assets/logos/gym_logo_premium.png"
+        icon_path="assets/logos/gym_logo_premium.png",
+        page_url="/gym",
     )
 
 
