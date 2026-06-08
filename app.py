@@ -2,6 +2,7 @@ import base64
 
 import streamlit as st
 
+from components.metric_card import metric_card
 from config import (
     APP_NAME,
     APP_YEAR,
@@ -57,15 +58,6 @@ progress = (START_WEIGHT - current_weight) / (START_WEIGHT - GOAL_WEIGHT)
 progress = max(0.0, min(progress, 1.0))
 
 
-def metric_card(label, value, delta, delta_color="normal"):
-    st.metric(
-        label=label,
-        value=value,
-        delta=delta,
-        delta_color=delta_color
-    )
-
-
 st.markdown(
     f"""
 <div class="hero-container">
@@ -82,40 +74,48 @@ st.markdown(
 st.markdown('<div class="hero-divider"></div>', unsafe_allow_html=True)
 
 
-col1, col2 = st.columns(2)
+col1, spacer1, col2 = st.columns([1, 0.06, 1])
 
 with col1:
     metric_card(
-        label="Weight",
+        title="Weight",
         value=weight,
         delta=weight_change,
-        delta_color="inverse"
+        icon_path="assets/logos/weight_logo_premium.png"
     )
 
 with col2:
     metric_card(
-        label="Last Run",
+        title="Last Run",
         value=DEFAULT_LAST_RUN,
         delta=DEFAULT_LAST_PACE,
-        delta_color="inverse"
+        icon_path="assets/logos/running_logo_premium.png"
     )
 
 
-col3, col4 = st.columns(2)
+st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
+
+
+col3, spacer2, col4 = st.columns([1, 0.06, 1])
 
 with col3:
     metric_card(
-        label="Boxing",
+        title="Boxing",
         value=DEFAULT_BOXING_SESSIONS,
-        delta=DEFAULT_BOXING_NOTE
+        delta=DEFAULT_BOXING_NOTE,
+        icon_path="assets/logos/boxing_logo_premium.png"
     )
 
 with col4:
     metric_card(
-        label="Gym",
+        title="Gym",
         value=DEFAULT_GYM_SESSIONS,
-        delta=DEFAULT_GYM_NOTE
+        delta=DEFAULT_GYM_NOTE,
+        icon_path="assets/logos/gym_logo_premium.png"
     )
+
+
+st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 
 with st.container(border=True):

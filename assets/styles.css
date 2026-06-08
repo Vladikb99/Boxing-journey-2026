@@ -73,13 +73,52 @@ section.main > div {
     margin: 10px 0 28px 0;
 }
 
-/* METRIC CARDS */
+/* CUSTOM METRIC CARDS */
 
-div[data-testid="stMetric"] {
+.custom-metric-card {
+    position: relative;
+    min-height: 125px;
     background-color: #111111;
     border: 1px solid rgba(201, 162, 39, 0.35);
     border-radius: 14px;
-    padding: 18px;
+    padding: 22px;
+    overflow: hidden;
+    transition: 0.2s ease;
+}
+
+.custom-metric-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(201, 162, 39, 0.75);
+    box-shadow: 0 10px 30px rgba(201, 162, 39, 0.08);
+}
+
+.metric-card-icon {
+    display: none;
+}
+
+.metric-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #F5F5F5;
+    margin-bottom: 14px;
+}
+
+.metric-card-value {
+    font-size: 34px;
+    font-weight: 500;
+    color: #F5F5F5;
+    line-height: 1.1;
+}
+
+.metric-card-delta {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(0, 180, 90, 0.18);
+    color: #20E070;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 /* QUOTE */
@@ -185,4 +224,12 @@ div[data-testid="stMetric"] {
         opacity: 0;
         transform: translateY(-80px) scale(0.96);
     }
+}
+
+.section-gap {
+    height: 18px;
+}
+
+.section-gap-large {
+    height: 22px;
 }
