@@ -4,8 +4,8 @@ import streamlit as st
 
 from components.home_button import home_button
 from components.page_header import page_header
-from config import GOAL_WEIGHT, START_WEIGHT, HEIGHT_M
-from utils.data_loader import load_weight_data, save_weight
+from utils.settings_loader import load_settings
+from utils.data_loader import load_weight_data, save_weight, delete_latest_weight
 from utils.style_loader import load_css
 
 
@@ -17,6 +17,12 @@ home_button()
 st.markdown('<div class="page-wrapper">', unsafe_allow_html=True)
 
 weight_df = load_weight_data()
+
+settings = load_settings()
+
+GOAL_WEIGHT = settings["goal_weight"]
+START_WEIGHT = settings["start_weight"]
+HEIGHT_M = settings["height_m"]
 
 if weight_df.empty:
     st.warning("No weight data found yet.")

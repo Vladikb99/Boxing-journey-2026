@@ -4,6 +4,12 @@ html, body, .stApp, .stApp * {
     font-family: 'Switzer', sans-serif !important;
 }
 
+
+[data-testid="stMainBlockContainer"] {
+    max-width: 1500px;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
 /* Keep Streamlit internal icons working */
 [data-testid="stIconMaterial"],
 [data-testid="stIconMaterial"] *,
@@ -24,7 +30,7 @@ section.main > div {
 }
 
 .page-wrapper {
-    max-width: 950px;
+    max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -236,7 +242,7 @@ section.main > div {
 .premium-quote-card {
     border-top: 1px solid rgba(201, 162, 39, 0.35);
     border-bottom: 1px solid rgba(201, 162, 39, 0.35);
-    padding: 34px 28px;
+    padding: 42px 34px 46px 34px;
     margin-top: 8px;
     margin-bottom: 20px;
     background: linear-gradient(
@@ -253,15 +259,26 @@ section.main > div {
     box-shadow: 0 12px 32px rgba(201, 162, 39, 0.05);
 }
 
-.quote-mark {
+.quote-mark-open,
+.quote-mark-close {
     font-size: 46px;
     line-height: 1;
-    color: #C9A227;
-    margin-bottom: 8px;
+    color: rgba(201, 162, 39, 1);
+    opacity: 1;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(201, 162, 39, 0.18);
+}
+
+.quote-mark-open {
+    margin-bottom: 22px;
+}
+
+.premium-quote-body {
+    display: inline-block;
+    max-width: 980px;
 }
 
 .premium-quote-text {
-    max-width: 900px;
     font-size: 30px;
     font-weight: 500;
     font-style: italic;
@@ -269,12 +286,20 @@ section.main > div {
     color: #C9A227;
 }
 
-.premium-quote-author {
-    margin-top: 22px;
-    font-size: 15px;
-    font-weight: 500;
-    color: rgba(245, 245, 245, 0.8);
+.premium-quote-bottom {
+    margin-top: 14px;
     text-align: right;
+}
+
+.quote-mark-close {
+    margin-top: 0;
+}
+
+.premium-quote-author {
+    margin-top: 2px;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(245, 245, 245, 0.82);
 }
 
 /* QUOTE SPLASH */
@@ -296,13 +321,6 @@ section.main > div {
     padding: 40px;
     text-align: center;
     animation: splashContentMove 3.8s ease forwards;
-}
-
-.quote-splash-symbol {
-    font-size: 76px;
-    line-height: 1;
-    color: #C9A227;
-    margin-bottom: 10px;
 }
 
 .quote-splash-text {
@@ -708,4 +726,140 @@ section.main > div {
 .history-change.neutral {
     background: rgba(245, 245, 245, 0.08);
     color: rgba(245, 245, 245, 0.65);
+}
+
+/* HIDE STREAMLIT TOP TOOLBAR / MENU */
+
+[data-testid="stToolbar"] {
+    display: none !important;
+}
+
+[data-testid="stDecoration"] {
+    display: none !important;
+}
+
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
+
+#MainMenu {
+    visibility: hidden !important;
+}
+
+header {
+    visibility: hidden !important;
+}
+
+/* SETTINGS BUTTON */
+
+.settings-button {
+    position: fixed;
+    right: 28px;
+    bottom: 26px;
+    z-index: 1000;
+
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(201, 162, 39, 0.28);
+    border-radius: 999px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #C9A227 !important;
+    background: rgba(11, 11, 11, 0.72);
+    backdrop-filter: blur(8px);
+
+    text-decoration: none !important;
+    font-size: 18px;
+    font-weight: 600;
+
+    opacity: 0.38;
+    transition: 0.22s ease;
+}
+
+.settings-button:hover {
+    opacity: 1;
+    border-color: rgba(201, 162, 39, 0.75);
+    background: rgba(201, 162, 39, 0.08);
+    transform: translateY(-2px) rotate(18deg);
+    box-shadow: 0 10px 28px rgba(201, 162, 39, 0.08);
+}
+
+/* HOME GOAL CARD */
+
+.home-goal-card {
+    border: 1px solid rgba(201, 162, 39, 0.25);
+    border-radius: 16px;
+    padding: 26px 28px;
+    background:
+        radial-gradient(circle at top right, rgba(201, 162, 39, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(17, 17, 17, 0.96), rgba(8, 8, 8, 0.98));
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+}
+
+.home-goal-eyebrow {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #C9A227;
+    margin-bottom: 22px;
+}
+
+.home-goal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 26px;
+    margin-bottom: 26px;
+}
+
+.home-goal-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(245, 245, 245, 0.62);
+    margin-bottom: 8px;
+}
+
+.home-goal-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #F5F5F5;
+    letter-spacing: -0.5px;
+}
+
+.home-goal-muted {
+    margin-top: 6px;
+    font-size: 13px;
+    color: rgba(245, 245, 245, 0.45);
+}
+
+.home-goal-progress-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(245, 245, 245, 0.78);
+}
+
+.home-goal-progress-track {
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(245, 245, 245, 0.08);
+}
+
+.home-goal-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #C9A227, #F0D36A);
+    box-shadow: 0 0 18px rgba(201, 162, 39, 0.25);
+}
+
+@media (max-width: 900px) {
+    .home-goal-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

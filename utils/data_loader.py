@@ -7,10 +7,15 @@ import pandas as pd
 def _load_csv(file_path: str, columns: list[str]) -> pd.DataFrame:
     path = Path(file_path)
 
-    if not path.exists():
+    if not path.exists() or path.stat().st_size == 0:
         return pd.DataFrame(columns=columns)
 
-    df = pd.read_csv(path)
+    try:
+        df = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame(columns=columns)
+
+    df.columns = df.columns.str.strip()
 
     for column in columns:
         if column not in df.columns:
@@ -20,16 +25,30 @@ def _load_csv(file_path: str, columns: list[str]) -> pd.DataFrame:
 
 
 def load_weight_data() -> pd.DataFrame:
-    df = _load_csv(
-        "data/weight.csv",
-        ["date", "weight_kg"]
-    )
+    path = Path("data/weight.csv")
+
+    if not path.exists() or path.stat().st_size == 0:
+        return pd.DataFrame(columns=["date", "weight_kg"])
+
+    df = pd.read_csv(path)
+    df.columns = df.columns.str.strip()
+
+    if "weight_kg" not in df.columns and "weight" in df.columns:
+        df = df.rename(columns={"weight": "weight_kg"})
+
+    if "date" not in df.columns:
+        df["date"] = ""
+
+    if "weight_kg" not in df.columns:
+        df["weight_kg"] = ""
+
+    df = df[["date", "weight_kg"]]
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["weight_kg"] = pd.to_numeric(df["weight_kg"], errors="coerce")
 
     df = df.dropna(subset=["date", "weight_kg"])
-    df = df.sort_values("date")
+    df = df.sort_values("date").reset_index(drop=True)
 
     return df
 
@@ -37,7 +56,7 @@ def load_weight_data() -> pd.DataFrame:
 def load_runs_data() -> pd.DataFrame:
     df = _load_csv(
         "data/runs.csv",
-        ["date", "distance_km", "duration_min", "comment"]
+        ["date", "distance_km", "duration_min", "comment"],
     )
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
@@ -46,7 +65,7 @@ def load_runs_data() -> pd.DataFrame:
     df["comment"] = df["comment"].fillna("")
 
     df = df.dropna(subset=["date", "distance_km", "duration_min"])
-    df = df.sort_values("date")
+    df = df.sort_values("date").reset_index(drop=True)
 
     return df
 
@@ -54,7 +73,7 @@ def load_runs_data() -> pd.DataFrame:
 def load_boxing_data() -> pd.DataFrame:
     df = _load_csv(
         "data/boxing.csv",
-        ["date", "session_type", "comment"]
+        ["date", "session_type", "comment"],
     )
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
@@ -62,7 +81,7 @@ def load_boxing_data() -> pd.DataFrame:
     df["comment"] = df["comment"].fillna("")
 
     df = df.dropna(subset=["date"])
-    df = df.sort_values("date")
+    df = df.sort_values("date").reset_index(drop=True)
 
     return df
 
@@ -70,7 +89,7 @@ def load_boxing_data() -> pd.DataFrame:
 def load_gym_data() -> pd.DataFrame:
     df = _load_csv(
         "data/gym.csv",
-        ["date", "exercise", "sets", "reps", "weight_kg", "comment"]
+        ["date", "exercise", "sets", "reps", "weight_kg", "comment"],
     )
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
@@ -80,7 +99,7 @@ def load_gym_data() -> pd.DataFrame:
     df["comment"] = df["comment"].fillna("")
 
     df = df.dropna(subset=["date"])
-    df = df.sort_values("date")
+    df = df.sort_values("date").reset_index(drop=True)
 
     return df
 
@@ -97,10 +116,36 @@ def get_latest_weight() -> float:
 def save_weight(weight: float) -> None:
     df = load_weight_data()
 
-    new_row = {
-        "date": date.today().isoformat(),
-        "weight_kg": weight
-    }
+    new_row = pd.DataFrame(
+        [
+            {
+                "date": date.today().isoformat(),
+                "weight_kg": weight,
+            }
+        ]
+    )
 
-    df.loc[len(df)] = new_row
+    df = pd.concat([df, new_row], ignore_index=True)
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df = df.dropna(subset=["date", "weight_kg"])
+    df = df.sort_values("date").reset_index(drop=True)
+
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     df.to_csv("data/weight.csv", index=False)
+
+
+def delete_latest_weight() -> bool:
+    df = load_weight_data()
+
+    if df.empty:
+        return False
+
+    df = df.iloc[:-1].copy()
+
+    if not df.empty:
+        df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+
+    df.to_csv("data/weight.csv", index=False)
+
+    return True

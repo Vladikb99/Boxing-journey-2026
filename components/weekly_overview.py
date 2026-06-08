@@ -9,7 +9,7 @@ def weekly_overview(
 ) -> None:
     html = f"""
 <div class="weekly-strip">
-<div class="weekly-label">THIS WEEK</div>
+<div class="weekly-label">LAST 7 DAYS</div>
 <div class="weekly-grid">
 <div><div class="weekly-title">Weight</div><div class="weekly-value">{weight_change}</div></div>
 <div><div class="weekly-title">Runs</div><div class="weekly-value">{run_distance}</div></div>
