@@ -32,6 +32,7 @@ from utils.quote_loader import get_quote_of_the_day
 from utils.style_loader import load_css
 from utils.date_utils import get_greeting, get_today_label
 from components.weekly_overview import weekly_overview
+from components.quote_card import quote_card
 
 
 st.set_page_config(
@@ -188,17 +189,7 @@ with st.container(border=True):
         unsafe_allow_html=True,
     )
 
-with st.container(border=True):
-    st.markdown(f"""
-    <div class="quote-card">
-        <div class="quote-text">
-            ❝ {quote} ❞
-        </div>
-        <div class="quote-author">
-            — {author}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+quote_card(quote, author)
 
 
 st.markdown('</div>', unsafe_allow_html=True)

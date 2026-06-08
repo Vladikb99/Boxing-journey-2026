@@ -80,6 +80,62 @@ section.main > div {
     margin: 10px 0 28px 0;
 }
 
+/* SECTION GAPS */
+
+.section-gap {
+    height: 18px;
+}
+
+.section-gap-large {
+    height: 22px;
+}
+
+/* WEEKLY OVERVIEW */
+
+.weekly-overview,
+.weekly-strip {
+    border: 1px solid rgba(201, 162, 39, 0.22);
+    border-radius: 14px;
+    padding: 18px 22px;
+    background: rgba(17, 17, 17, 0.65);
+    margin-bottom: 4px;
+    transition: 0.22s ease;
+}
+
+.weekly-overview:hover,
+.weekly-strip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(201, 162, 39, 0.45);
+    box-shadow: 0 10px 28px rgba(201, 162, 39, 0.06);
+}
+
+.weekly-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    color: #C9A227;
+    margin-bottom: 16px;
+}
+
+.weekly-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.weekly-title {
+    font-size: 13px;
+    color: rgba(245, 245, 245, 0.55);
+    margin-bottom: 10px;
+}
+
+.weekly-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #F5F5F5;
+    line-height: 1.1;
+}
+
 /* CUSTOM METRIC CARDS */
 
 .custom-metric-card {
@@ -90,13 +146,13 @@ section.main > div {
     border-radius: 14px;
     padding: 22px;
     overflow: hidden;
-    transition: 0.2s ease;
+    transition: 0.22s ease;
 }
 
 .custom-metric-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
     border-color: rgba(201, 162, 39, 0.75);
-    box-shadow: 0 10px 30px rgba(201, 162, 39, 0.08);
+    box-shadow: 0 14px 34px rgba(201, 162, 39, 0.09);
 }
 
 .metric-card-icon {
@@ -128,7 +184,22 @@ section.main > div {
     font-weight: 600;
 }
 
-/* QUOTE */
+/* GOAL PROGRESS */
+
+.goal-remaining {
+    font-size: 22px;
+    font-weight: 700;
+    color: #F5F5F5;
+    margin-top: 16px;
+}
+
+.goal-percent {
+    font-size: 13px;
+    color: rgba(245,245,245,0.55);
+    margin-top: 6px;
+}
+
+/* OLD QUOTE CARD FALLBACK */
 
 .quote-card {
     padding: 18px 12px;
@@ -149,6 +220,52 @@ section.main > div {
     color: rgba(245, 245, 245, 0.85) !important;
     text-align: right;
     font-weight: 500;
+}
+
+/* PREMIUM QUOTE CARD */
+
+.premium-quote-card {
+    border-top: 1px solid rgba(201, 162, 39, 0.35);
+    border-bottom: 1px solid rgba(201, 162, 39, 0.35);
+    padding: 34px 28px;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    background: linear-gradient(
+        90deg,
+        rgba(201, 162, 39, 0.04),
+        rgba(201, 162, 39, 0.01)
+    );
+    transition: 0.22s ease;
+}
+
+.premium-quote-card:hover {
+    border-top-color: rgba(201, 162, 39, 0.65);
+    border-bottom-color: rgba(201, 162, 39, 0.65);
+    box-shadow: 0 12px 32px rgba(201, 162, 39, 0.05);
+}
+
+.quote-mark {
+    font-size: 46px;
+    line-height: 1;
+    color: #C9A227;
+    margin-bottom: 8px;
+}
+
+.premium-quote-text {
+    max-width: 900px;
+    font-size: 30px;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.45;
+    color: #C9A227;
+}
+
+.premium-quote-author {
+    margin-top: 22px;
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(245, 245, 245, 0.8);
+    text-align: right;
 }
 
 /* QUOTE SPLASH */
@@ -231,60 +348,4 @@ section.main > div {
         opacity: 0;
         transform: translateY(-80px) scale(0.96);
     }
-}
-
-.section-gap {
-    height: 18px;
-}
-
-.section-gap-large {
-    height: 22px;
-}
-
-.weekly-overview {
-    border: 1px solid rgba(201, 162, 39, 0.22);
-    border-radius: 14px;
-    padding: 18px 22px;
-    background: rgba(17, 17, 17, 0.65);
-    margin-bottom: 4px;
-}
-
-.weekly-label {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1.8px;
-    color: #C9A227;
-    margin-bottom: 16px;
-}
-
-.weekly-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-}
-
-.weekly-title {
-    font-size: 13px;
-    color: rgba(245, 245, 245, 0.55);
-    margin-bottom: 10px;
-}
-
-.weekly-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #F5F5F5;
-    line-height: 1.1;
-}
-
-.goal-remaining {
-    font-size: 22px;
-    font-weight: 700;
-    color: #F5F5F5;
-    margin-top: 16px;
-}
-
-.goal-percent {
-    font-size: 13px;
-    color: rgba(245,245,245,0.55);
-    margin-top: 6px;
 }
