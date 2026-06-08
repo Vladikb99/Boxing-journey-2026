@@ -1,0 +1,188 @@
+@import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+html, body, [class*="css"], * {
+    font-family: 'Switzer', sans-serif !important;
+}
+
+section.main > div {
+    padding-top: 3rem;
+}
+
+.dashboard-wrapper {
+    max-width: 1200px;
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.page-wrapper {
+    max-width: 950px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* HERO */
+
+.hero-container {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: -10px;
+    margin-bottom: 8px;
+}
+
+.hero-logo {
+    width: 220px;
+    height: auto;
+    flex-shrink: 0;
+    margin-right: -60px;
+    filter: drop-shadow(0 0 12px rgba(201, 162, 39, 0.18));
+    transition: 0.25s ease;
+}
+
+.hero-logo:hover {
+    filter: drop-shadow(0 0 20px rgba(201, 162, 39, 0.45));
+}
+
+.hero-title {
+    font-size: 44px !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px;
+    color: #F5F5F5 !important;
+    margin-bottom: 0;
+    line-height: 1.1;
+}
+
+.hero-title span {
+    color: #C9A227 !important;
+}
+
+.hero-subtitle {
+    font-size: 16px !important;
+    color: #A0A0A0 !important;
+    margin-bottom: 28px;
+}
+
+.hero-divider {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(201, 162, 39, 0.8),
+        rgba(201, 162, 39, 0.05)
+    );
+    margin: 10px 0 28px 0;
+}
+
+/* METRIC CARDS */
+
+div[data-testid="stMetric"] {
+    background-color: #111111;
+    border: 1px solid rgba(201, 162, 39, 0.35);
+    border-radius: 14px;
+    padding: 18px;
+}
+
+/* QUOTE */
+
+.quote-card {
+    padding: 18px 12px;
+}
+
+.quote-text {
+    font-size: 30px !important;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.5;
+    color: #C9A227 !important;
+    letter-spacing: 0.4px;
+    margin-bottom: 24px;
+}
+
+.quote-author {
+    font-size: 15px;
+    color: rgba(245, 245, 245, 0.85) !important;
+    text-align: right;
+    font-weight: 500;
+}
+
+/* QUOTE SPLASH */
+
+.quote-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0B0B0B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    animation: splashExit 3.8s ease forwards;
+}
+
+.quote-splash-content {
+    max-width: 950px;
+    padding: 40px;
+    text-align: center;
+    animation: splashContentMove 3.8s ease forwards;
+}
+
+.quote-splash-symbol {
+    font-size: 76px;
+    line-height: 1;
+    color: #C9A227;
+    margin-bottom: 10px;
+}
+
+.quote-splash-text {
+    font-size: 54px;
+    font-weight: 600;
+    font-style: italic;
+    line-height: 1.25;
+    color: #C9A227;
+    margin-bottom: 28px;
+}
+
+.quote-splash-author {
+    font-size: 20px;
+    color: #F5F5F5;
+    opacity: 0.85;
+}
+
+@keyframes splashExit {
+    0% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    72% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+@keyframes splashContentMove {
+    0% {
+        opacity: 0;
+        transform: translateY(24px) scale(0.98);
+    }
+
+    16% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    72% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-80px) scale(0.96);
+    }
+}

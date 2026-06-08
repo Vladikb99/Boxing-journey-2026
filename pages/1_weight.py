@@ -1,32 +1,22 @@
 import streamlit as st
 import plotly.express as px
-
 from utils.data_loader import load_weight_data, save_weight
+from utils.style_loader import load_css
+from config import GOAL_WEIGHT, START_WEIGHT, HEIGHT_M
 
 st.title("⚖️ Weight")
 
-st.markdown(
-    """
-    <style>
-    .block-container {
-        max-width: 950px;
-        padding-top: 2rem;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+load_css("assets/styles.css")
+
+st.markdown('<div class="page-wrapper">', unsafe_allow_html=True)
 
 weight_df = load_weight_data()
-GOAL_WEIGHT = 75
 
 current_weight = weight_df["weight"].iloc[-1]
 previous_weight = weight_df["weight"].iloc[-2]
 weight_change = current_weight - previous_weight
 remaining_kg = current_weight - GOAL_WEIGHT
-height_m = 1.84
-bmi = current_weight / (height_m ** 2)
-START_WEIGHT = 86.7
+bmi = current_weight / (HEIGHT_M ** 2)
 
 progress = (START_WEIGHT - current_weight) / (START_WEIGHT - GOAL_WEIGHT)
 progress = max(0.0, min(progress, 1.0))
@@ -126,3 +116,4 @@ with st.expander("📋 Weight History"):
         use_container_width=True,
         hide_index=True
     )
+st.markdown('</div>', unsafe_allow_html=True)

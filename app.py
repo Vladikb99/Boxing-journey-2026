@@ -1,87 +1,60 @@
+import base64
+
 import streamlit as st
-from utils.data_loader import load_weight_data, get_latest_weight
+
+from config import (
+    APP_NAME,
+    APP_YEAR,
+    GOAL_WEIGHT,
+    START_WEIGHT,
+    DEFAULT_LAST_RUN,
+    DEFAULT_LAST_PACE,
+    DEFAULT_BOXING_SESSIONS,
+    DEFAULT_BOXING_NOTE,
+    DEFAULT_GYM_SESSIONS,
+    DEFAULT_GYM_NOTE,
+)
 from utils.calculations import calculate_weight_change
+from utils.data_loader import load_weight_data, get_latest_weight
+from utils.quote_loader import get_quote_of_the_day
+from utils.style_loader import load_css
+
 
 st.set_page_config(
     page_title="Boxing Journey 2026",
     layout="wide"
 )
 
-st.markdown("""
-<style>
-@import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+load_css("assets/styles.css")
 
-html, body, [class*="css"], * {
-    font-family: 'Switzer', sans-serif !important;
-}
-
-.hero-title {
-    font-family: 'Switzer', sans-serif !important;
-    font-size: 44px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: #F5F5F5;
-    margin-bottom: 0px;
-    line-height: 1.1;
-}
-
-.hero-title span {
-    color: #C9A227;
-}
-
-.hero-subtitle {
-    font-family: 'Switzer', sans-serif !important;
-    font-size: 16px;
-    color: #A0A0A0;
-    margin-bottom: 28px;
-}
-
-div[data-testid="stMetric"] {
-    background-color: #111111;
-    border: 1px solid rgba(201, 162, 39, 0.35);
-    border-radius: 14px;
-    padding: 18px;
-}
-            
- .quote-card {
-    padding: 10px 4px;
-}
-
-.quote-text {
-    font-size: 24px;
-    font-weight: 500;
-    font-style: italic;
-    color: #F5F5F5;
-    margin-bottom: 10px;
-}
-
-.quote-author {
-    font-size: 14px;
-    color: #C9A227;
-}           
-</style>
-""", unsafe_allow_html=True)
+st.markdown('<div class="dashboard-wrapper">', unsafe_allow_html=True)
 
 weight_df = load_weight_data()
 
-weight = f"{get_latest_weight()} kg"
+current_weight = get_latest_weight()
+weight = f"{current_weight:.1f} kg"
 weight_change = calculate_weight_change(weight_df)
 
-GOAL_WEIGHT = 75
-START_WEIGHT = 86.7
+quote, author = get_quote_of_the_day()
 
-current_weight = get_latest_weight()
+with open("assets/logos/boxing_logo_premium.png", "rb") as image:
+    logo_base64 = base64.b64encode(image.read()).decode()
+
+st.markdown(f"""
+<div class="quote-splash">
+    <div class="quote-splash-content">
+        <div class="quote-splash-text">
+            ❝ {quote} ❞
+        </div>
+        <div class="quote-splash-author">
+            — {author}
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 progress = (START_WEIGHT - current_weight) / (START_WEIGHT - GOAL_WEIGHT)
 progress = max(0.0, min(progress, 1.0))
-
-last_run = "4 km"
-last_pace = "5:27/km"
-
-boxing_sessions = "0 this week"
-boxing_note = "No session logged"
-
-gym_sessions = "0 this week"
-gym_note = "No session logged"
 
 
 def metric_card(label, value, delta, delta_color="normal"):
@@ -93,14 +66,20 @@ def metric_card(label, value, delta, delta_color="normal"):
     )
 
 
-st.markdown("""
-<div class="hero-title">
-    BOXING JOURNEY <span>2026</span>
+st.markdown(
+    f"""
+<div class="hero-container">
+<img class="hero-logo" src="data:image/png;base64,{logo_base64}" alt="Boxing Journey logo">
+<div>
+<div class="hero-title">{APP_NAME} <span>{APP_YEAR}</span></div>
+<div class="hero-subtitle">Welcome back, Vladik.</div>
 </div>
-<div class="hero-subtitle">
-    Welcome back, Vladik.
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True
+)
+
+st.markdown('<div class="hero-divider"></div>', unsafe_allow_html=True)
 
 
 col1, col2 = st.columns(2)
@@ -116,30 +95,50 @@ with col1:
 with col2:
     metric_card(
         label="Last Run",
-        value=last_run,
-        delta=last_pace,
+        value=DEFAULT_LAST_RUN,
+        delta=DEFAULT_LAST_PACE,
         delta_color="inverse"
     )
+
 
 col3, col4 = st.columns(2)
 
 with col3:
-    metric_card("Boxing", boxing_sessions, boxing_note)
+    metric_card(
+        label="Boxing",
+        value=DEFAULT_BOXING_SESSIONS,
+        delta=DEFAULT_BOXING_NOTE
+    )
 
 with col4:
-    metric_card("Gym", gym_sessions, gym_note)
+    metric_card(
+        label="Gym",
+        value=DEFAULT_GYM_SESSIONS,
+        delta=DEFAULT_GYM_NOTE
+    )
 
 
 with st.container(border=True):
     st.write("### Goal Progress")
     st.caption(f"{current_weight:.1f} kg → {GOAL_WEIGHT:.1f} kg")
     st.progress(progress)
-    st.caption(f"{progress * 100:.0f}% completed • {current_weight - GOAL_WEIGHT:.1f} kg remaining")
+    st.caption(
+        f"{progress * 100:.0f}% completed • "
+        f"{current_weight - GOAL_WEIGHT:.1f} kg remaining"
+    )
+
 
 with st.container(border=True):
-    st.markdown("""
+    st.markdown(f"""
     <div class="quote-card">
-        <div class="quote-text">"Discipline beats motivation."</div>
-        <div class="quote-author">— Unknown</div>
+        <div class="quote-text">
+            ❝ {quote} ❞
+        </div>
+        <div class="quote-author">
+            — {author}
+        </div>
     </div>
     """, unsafe_allow_html=True)
+
+
+st.markdown('</div>', unsafe_allow_html=True)
