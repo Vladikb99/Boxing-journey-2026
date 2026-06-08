@@ -278,6 +278,7 @@ section.main > div {
     animation-delay: 4.45s;
 }
 
+
 @media (prefers-reduced-motion: reduce) {
     .fade-in {
         opacity: 1;
