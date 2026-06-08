@@ -24,6 +24,30 @@ if "open_weight_manager" not in st.session_state:
 
 if st.query_params.get("manage_weight") == "true":
     st.session_state.open_weight_manager = True
+    st.query_params.clear()
+    st.rerun()
+
+
+def show_save_feedback() -> None:
+    feedback_message = st.session_state.pop("save_feedback_message", None)
+
+    if not feedback_message:
+        return
+
+    st.markdown(
+        f"""
+<div class="save-feedback-toast">
+<span class="save-feedback-icon">✓</span>
+<span>{feedback_message}</span>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+
+
+show_save_feedback()
+
 
 st.markdown(
     """
@@ -173,7 +197,7 @@ def weight_manager_dialog() -> None:
             if updated:
                 st.session_state.open_weight_manager = False
                 st.query_params.clear()
-                st.success("Weight entry updated.")
+                st.session_state.save_feedback_message = "Weight entry updated"
                 st.rerun()
             else:
                 st.warning("Could not update entry.")
@@ -194,7 +218,7 @@ def weight_manager_dialog() -> None:
         if deleted:
             st.session_state.open_weight_manager = False
             st.query_params.clear()
-            st.success("Weight entry deleted.")
+            st.session_state.save_feedback_message = "Weight entry deleted"
             st.rerun()
         else:
             st.warning("Could not delete entry.")
@@ -207,7 +231,6 @@ def weight_manager_dialog() -> None:
 
 if st.session_state.open_weight_manager:
     weight_manager_dialog()
-
 
 # PREMIUM STATUS CARD
 
@@ -511,10 +534,12 @@ with st.container(border=True):
                 use_container_width=True,
             )
 
-        if submitted:
-            save_weight(new_weight)
-            st.success("Weight saved!")
-            st.rerun()
+if submitted:
+    save_weight(new_weight)
+    st.session_state.open_weight_manager = False
+    st.query_params.clear()
+    st.session_state.save_feedback_message = "Weight saved"
+    st.rerun()
 
 
 # RECENT ENTRIES

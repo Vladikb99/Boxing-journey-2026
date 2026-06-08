@@ -1193,3 +1193,77 @@ button[title="Manage weight entries"]:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 28px rgba(201, 162, 39, 0.08);
 }
+
+/* SAVE FEEDBACK TOAST */
+
+.save-feedback-toast {
+    position: fixed;
+    top: 28px;
+    right: 32px;
+    z-index: 99999;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 14px 18px;
+    border: 1px solid rgba(201, 162, 39, 0.55);
+    border-radius: 999px;
+
+    background:
+        linear-gradient(135deg, rgba(14, 14, 14, 0.96), rgba(28, 24, 12, 0.96));
+    color: #F5F5F5;
+
+    box-shadow:
+        0 0 18px rgba(201, 162, 39, 0.22),
+        0 12px 28px rgba(0, 0, 0, 0.45);
+
+    font-size: 14px;
+    font-weight: 700;
+
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+    animation: saveToastInOut 2.6s ease forwards;
+}
+
+.save-feedback-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 180, 90, 0.18);
+    color: #00E676;
+
+    box-shadow:
+        0 0 10px rgba(0, 230, 118, 0.30),
+        0 0 18px rgba(201, 162, 39, 0.18);
+
+    font-size: 14px;
+    line-height: 1;
+}
+
+@keyframes saveToastInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.96);
+    }
+
+    14% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    78% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+    }
+}
