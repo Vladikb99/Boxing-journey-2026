@@ -174,7 +174,8 @@ if show_quote_splash:
 
     st.session_state.quote_splash_seen = True
 
-splash_wait_class = "splash-wait" if show_quote_splash else ""
+card_wait_class = ""
+logo_wait_class = "splash-wait" if show_quote_splash else ""
 
 # PAGE
 
@@ -212,7 +213,7 @@ Z
 st.markdown(
     f"""
 <div class="hero-container">
-<div class="hero-logo-wrap {splash_wait_class}">
+<div class="hero-logo-wrap {logo_wait_class}">
 <img class="hero-logo" src="data:image/png;base64,{logo_base64}" alt="Boxing Journey logo">
 
 <svg class="hero-logo-trace" viewBox="0 0 220 147" aria-hidden="true">
@@ -222,8 +223,8 @@ st.markdown(
         pathLength="100"
     />
 </svg>
-<span class="hero-trace-dot"></span>
 </div>
+
 <div>
 <div class="hero-title">{APP_NAME} <span>{APP_YEAR}</span></div>
 <div class="hero-subtitle">{greeting}</div>
@@ -256,7 +257,7 @@ weekly_overview(
     last_7_day_run_distance,
     last_7_day_boxing_sessions,
     last_7_day_gym_sessions,
-    animation_class=f"fade-in fade-delay-1 {splash_wait_class}",
+    animation_class=f"fade-in fade-delay-1 {card_wait_class}",
 )
 
 st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
@@ -271,9 +272,8 @@ with col1:
     title="Weight",
     value=weight_value,
     delta=weight_change,
-    icon_path="assets/logos/weight_logo_premium.png",
     page_url="/weight",
-    animation_class=f"fade-in fade-delay-2 {splash_wait_class}",
+    animation_class=f"fade-in fade-delay-2 {card_wait_class}",
 )
 
 with col2:
@@ -281,9 +281,8 @@ with col2:
     title="Last Run",
     value=last_run_value,
     delta=last_run_delta,
-    icon_path="assets/logos/running_logo_premium.png",
     page_url="/running",
-    animation_class=f"fade-in fade-delay-2 {splash_wait_class}",
+    animation_class=f"fade-in fade-delay-2 {card_wait_class}",
 )
 
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
@@ -295,9 +294,8 @@ with col3:
     title="Boxing",
     value=boxing_card_value,
     delta=boxing_card_note,
-    icon_path="assets/logos/boxing_logo_premium.png",
     page_url="/boxing",
-    animation_class=f"fade-in fade-delay-3 {splash_wait_class}",
+    animation_class=f"fade-in fade-delay-3 {card_wait_class}",
 )
 
 with col4:
@@ -305,9 +303,8 @@ with col4:
     title="Gym",
     value=gym_card_value,
     delta=gym_card_note,
-    icon_path="assets/logos/gym_logo_premium.png",
     page_url="/gym",
-    animation_class=f"fade-in fade-delay-3 {splash_wait_class}",
+    animation_class=f"fade-in fade-delay-3 {card_wait_class}",
 )
 
 st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
@@ -317,7 +314,7 @@ st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 st.markdown(
     f"""
-<div class="home-goal-card fade-in fade-delay-4 {splash_wait_class}">
+<div class="home-goal-card fade-in fade-delay-4 {card_wait_class}">
 <div class="home-goal-eyebrow">GOAL PROGRESS</div>
 
 <div class="home-goal-grid">
@@ -364,7 +361,7 @@ st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 quote_card(
     quote,
     author,
-    animation_class=f"fade-in fade-delay-5 {splash_wait_class}",
+    animation_class=f"fade-in fade-delay-5 {card_wait_class}",
 )
 
 components.html(
