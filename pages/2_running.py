@@ -8,7 +8,12 @@ import streamlit as st
 from components.home_button import home_button
 from components.page_header import page_header
 from utils.calculations import format_pace
-from utils.data_loader import load_runs_data, save_run
+from utils.data_loader import (
+    delete_run_entry,
+    load_runs_data,
+    save_run,
+    update_run_entry,
+)
 from utils.style_loader import load_css
 
 
@@ -16,6 +21,17 @@ load_css("assets/styles.css")
 
 page_header(title="Running", eyebrow="ROADWORK TRACKING")
 home_button()
+
+if "open_run_manager" not in st.session_state:
+    st.session_state.open_run_manager = False
+
+if "run_form_version" not in st.session_state:
+    st.session_state.run_form_version = 0
+
+if st.query_params.get("manage_run") == "true":
+    st.session_state.open_run_manager = True
+    st.query_params.clear()
+    st.rerun()
 
 st.markdown('<div class="page-wrapper">', unsafe_allow_html=True)
 
@@ -58,7 +74,182 @@ def pace_from_row(row: pd.Series) -> float:
     return duration / distance
 
 
+def format_run_option(index: int, df: pd.DataFrame) -> str:
+    row = df.loc[index]
+    distance = float(row["distance_km"])
+    duration = float(row["duration_min"])
+    pace = duration / distance if distance > 0 else 0.0
+
+    return (
+        f"{row['date'].strftime('%Y-%m-%d')} — "
+        f"{distance:.1f} km — "
+        f"{format_pace(pace)}"
+    )
+
+
+@st.dialog("Manage run entries", width="large")
+def run_manager_dialog() -> None:
+    manage_df = load_runs_data().reset_index(drop=True)
+
+    if manage_df.empty:
+        st.warning("No run entries available.")
+
+        if st.button("Close", use_container_width=True):
+            st.session_state.open_run_manager = False
+            st.query_params.clear()
+            st.rerun()
+
+        return
+
+    st.markdown(
+        """
+<div class="form-section-title">MANAGE RUN ENTRIES</div>
+<div class="form-section-subtitle">Edit or delete logged roadwork sessions.</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    entry_options = list(manage_df.index[::-1])
+
+    selected_index = st.selectbox(
+        "Select entry",
+        options=entry_options,
+        format_func=lambda index: format_run_option(index, manage_df),
+    )
+
+    selected_row = manage_df.loc[selected_index]
+    selected_date = selected_row["date"].date()
+    selected_distance = float(selected_row["distance_km"])
+    selected_duration = float(selected_row["duration_min"])
+    selected_comment = str(selected_row["comment"]).strip()
+
+    selected_pace = (
+        selected_duration / selected_distance
+        if selected_distance > 0
+        else 0.0
+    )
+
+    st.markdown(
+        f"""
+<div class="selected-entry-card">
+<div class="selected-entry-label">SELECTED RUN</div>
+<div class="selected-entry-value">{selected_date} — {selected_distance:.1f} km — {format_pace(selected_pace)}</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    with st.form(f"edit_run_entry_{selected_index}"):
+        edited_date = st.date_input(
+            "Date",
+            value=selected_date,
+        )
+
+        col_distance, col_duration = st.columns(2)
+
+        with col_distance:
+            edited_distance = st.number_input(
+                "Distance (km)",
+                min_value=0.1,
+                max_value=100.0,
+                value=selected_distance,
+                step=0.1,
+            )
+
+        with col_duration:
+            edited_duration = st.number_input(
+                "Duration (minutes)",
+                min_value=1.0,
+                max_value=600.0,
+                value=selected_duration,
+                step=0.1,
+            )
+
+        edited_pace = (
+            edited_duration / edited_distance
+            if edited_distance > 0
+            else 0.0
+        )
+
+        st.markdown(
+            f"""
+<div class="running-pace-preview">
+<span>Calculated pace</span>
+<strong>{format_pace(edited_pace)}</strong>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        edited_comment = st.text_area(
+            "Comment",
+            value=selected_comment,
+            height=90,
+        )
+
+        save_changes = st.form_submit_button(
+            "Save changes",
+            use_container_width=True,
+        )
+
+        if save_changes:
+            updated = update_run_entry(
+                row_index=selected_index,
+                new_date=edited_date,
+                new_distance_km=edited_distance,
+                new_duration_min=edited_duration,
+                new_comment=edited_comment,
+            )
+
+            if updated:
+                st.session_state.open_run_manager = False
+                st.query_params.clear()
+                st.session_state.save_feedback_message = "Run entry updated"
+                st.rerun()
+            else:
+                st.warning("Could not update entry.")
+
+    st.divider()
+
+    st.warning("Deleting a run is permanent.")
+
+    confirm_delete = st.checkbox("Confirm delete selected run")
+
+    if st.button(
+        "Delete selected run",
+        use_container_width=True,
+        disabled=not confirm_delete,
+    ):
+        deleted = delete_run_entry(selected_index)
+
+        if deleted:
+            st.session_state.open_run_manager = False
+            st.query_params.clear()
+            st.session_state.save_feedback_message = "Run entry deleted"
+            st.rerun()
+        else:
+            st.warning("Could not delete entry.")
+
+    if st.button("Close", use_container_width=True):
+        st.session_state.open_run_manager = False
+        st.query_params.clear()
+        st.rerun()
+
+
+if st.session_state.open_run_manager:
+    run_manager_dialog()
+
+
 show_save_feedback()
+
+st.markdown(
+    """
+<a class="weight-manage-button" href="/running?manage_run=true" target="_self" title="Manage run entries">
+✎
+</a>
+""",
+    unsafe_allow_html=True,
+)
 
 runs_df = load_runs_data()
 
@@ -370,19 +561,27 @@ with st.container(border=True):
         unsafe_allow_html=True,
     )
 
-    with st.form("running_checkin_form"):
+    form_version = st.session_state.run_form_version
+    distance_default = latest_distance if latest_distance > 0 else 4.0
+
+    with st.form(f"running_checkin_form_{form_version}"):
         col_date, col_distance, col_duration = st.columns(3)
 
         with col_date:
-            run_date = st.date_input("Date", value=today)
+            run_date = st.date_input(
+                "Date",
+                value=today,
+                key=f"run_date_{form_version}",
+            )
 
         with col_distance:
             distance_km = st.number_input(
                 "Distance (km)",
                 min_value=0.1,
                 max_value=100.0,
-                value=4.0,
+                value=float(distance_default),
                 step=0.1,
+                key="run_distance_km",
             )
 
         with col_duration:
@@ -390,17 +589,25 @@ with st.container(border=True):
                 "Duration (minutes)",
                 min_value=1.0,
                 max_value=600.0,
-                value=22.0,
+                value=None,
                 step=0.1,
+                placeholder="Enter duration",
+                key=f"run_duration_min_{form_version}",
             )
 
-        calculated_pace = duration_min / distance_km if distance_km > 0 else 0.0
+        duration_ready = duration_min is not None and duration_min > 0
+
+        if duration_ready:
+            calculated_pace = duration_min / distance_km if distance_km > 0 else 0.0
+            pace_preview = format_pace(calculated_pace)
+        else:
+            pace_preview = "Enter duration"
 
         st.markdown(
             f"""
 <div class="running-pace-preview">
 <span>Calculated pace</span>
-<strong>{format_pace(calculated_pace)}</strong>
+<strong>{pace_preview}</strong>
 </div>
 """,
             unsafe_allow_html=True,
@@ -408,24 +615,30 @@ with st.container(border=True):
 
         comment = st.text_area(
             "Comment",
+            value="",
             placeholder="Example: Felt good. Last kilometer was hard but maintained pace.",
             height=90,
+            key=f"run_comment_{form_version}",
         )
 
         submitted = st.form_submit_button(
-            "Save run",
-            use_container_width=True,
-        )
+    "Save run",
+    use_container_width=True,
+)
 
 if submitted:
-    save_run(
-        run_date=run_date,
-        distance_km=distance_km,
-        duration_min=duration_min,
-        comment=comment,
-    )
-    st.session_state.save_feedback_message = "Run saved"
-    st.rerun()
+    if duration_min is None or duration_min <= 0:
+        st.warning("Enter duration before saving the run.")
+    else:
+        save_run(
+            run_date=run_date,
+            distance_km=distance_km,
+            duration_min=duration_min,
+            comment=comment,
+        )
+        st.session_state.run_form_version += 1
+        st.session_state.save_feedback_message = "Run saved"
+        st.rerun()
 
 
 # RECENT RUNS
