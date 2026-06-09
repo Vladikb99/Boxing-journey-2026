@@ -278,7 +278,7 @@ with col1:
 
 with col2:
     metric_card(
-    title="Last Run",
+    title="Run",
     value=last_run_value,
     delta=last_run_delta,
     page_url="/running",

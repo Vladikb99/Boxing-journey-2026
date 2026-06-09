@@ -194,3 +194,66 @@ def delete_weight_entry(row_index: int) -> bool:
     df.to_csv("data/weight.csv", index=False)
 
     return True
+
+def save_run(run_date, distance_km: float, duration_min: float, comment: str = "") -> None:
+    df = load_runs_data()
+
+    new_row = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp(run_date),
+                "distance_km": float(distance_km),
+                "duration_min": float(duration_min),
+                "comment": comment.strip(),
+            }
+        ]
+    )
+
+    df = pd.concat([df, new_row], ignore_index=True)
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["distance_km"] = pd.to_numeric(df["distance_km"], errors="coerce")
+    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce")
+    df["comment"] = df["comment"].fillna("")
+
+    df = df.dropna(subset=["date", "distance_km", "duration_min"])
+    df = df.sort_values("date").reset_index(drop=True)
+
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+    df = df[["date", "distance_km", "duration_min", "comment"]]
+
+    df.to_csv("data/runs.csv", index=False)
+
+
+def save_run(run_date, distance_km: float, duration_min: float, comment: str = "") -> None:
+    df = load_runs_data()
+
+    new_row = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp(run_date),
+                "distance_km": float(distance_km),
+                "duration_min": float(duration_min),
+                "comment": comment.strip(),
+            }
+        ]
+    )
+
+    df = pd.concat([df, new_row], ignore_index=True)
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["distance_km"] = pd.to_numeric(df["distance_km"], errors="coerce")
+    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce")
+
+    if "comment" not in df.columns:
+        df["comment"] = ""
+
+    df["comment"] = df["comment"].fillna("")
+
+    df = df.dropna(subset=["date", "distance_km", "duration_min"])
+    df = df.sort_values("date").reset_index(drop=True)
+
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+    df = df[["date", "distance_km", "duration_min", "comment"]]
+
+    df.to_csv("data/runs.csv", index=False)
