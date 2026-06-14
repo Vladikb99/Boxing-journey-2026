@@ -165,11 +165,11 @@ def delete_weight_entry(row_index: int) -> bool:
 # RUNNING
 # -------------------------
 
+RUN_COLUMNS = ["date", "distance_km", "duration_min", "comment"]
+
+
 def load_runs_data() -> pd.DataFrame:
-    df = _load_csv(
-        "data/runs.csv",
-        ["date", "distance_km", "duration_min", "comment"],
-    )
+    df = _load_csv("data/runs.csv", RUN_COLUMNS)
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
     df["distance_km"] = pd.to_numeric(df["distance_km"], errors="coerce")
@@ -207,7 +207,7 @@ def save_run(run_date, distance_km: float, duration_min: float, comment: str = "
     df = df.sort_values("date").reset_index(drop=True)
 
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
-    df = df[["date", "distance_km", "duration_min", "comment"]]
+    df = df[RUN_COLUMNS]
 
     _save_csv(df, "data/runs.csv")
 
@@ -241,7 +241,7 @@ def update_run_entry(
     df = df.sort_values("date").reset_index(drop=True)
 
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
-    df = df[["date", "distance_km", "duration_min", "comment"]]
+    df = df[RUN_COLUMNS]
 
     _save_csv(df, "data/runs.csv")
 
@@ -262,7 +262,7 @@ def delete_run_entry(row_index: int) -> bool:
     if not df.empty:
         df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
-    df = df[["date", "distance_km", "duration_min", "comment"]]
+    df = df[RUN_COLUMNS]
     _save_csv(df, "data/runs.csv")
 
     return True
@@ -294,11 +294,11 @@ def load_boxing_data() -> pd.DataFrame:
     df["session_type"] = df["session_type"].fillna("")
     df["activities"] = df["activities"].fillna("")
 
-    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce")
-    df["rounds"] = pd.to_numeric(df["rounds"], errors="coerce")
-    df["round_length_min"] = pd.to_numeric(df["round_length_min"], errors="coerce")
-    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce")
-    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce")
+    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce").fillna(90.0)
+    df["rounds"] = pd.to_numeric(df["rounds"], errors="coerce").fillna(0)
+    df["round_length_min"] = pd.to_numeric(df["round_length_min"], errors="coerce").fillna(0)
+    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce").fillna(0)
+    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce").fillna(0)
 
     df["focus"] = df["focus"].fillna("")
     df["sparring"] = df["sparring"].fillna("No")
@@ -346,11 +346,11 @@ def save_boxing_session(
     df = pd.concat([df, new_row], ignore_index=True)
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce")
-    df["rounds"] = pd.to_numeric(df["rounds"], errors="coerce")
-    df["round_length_min"] = pd.to_numeric(df["round_length_min"], errors="coerce")
-    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce")
-    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce")
+    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce").fillna(90.0)
+    df["rounds"] = pd.to_numeric(df["rounds"], errors="coerce").fillna(0)
+    df["round_length_min"] = pd.to_numeric(df["round_length_min"], errors="coerce").fillna(0)
+    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce").fillna(0)
+    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce").fillna(0)
 
     df["session_type"] = df["session_type"].fillna("")
     df["activities"] = df["activities"].fillna("")
@@ -364,7 +364,7 @@ def save_boxing_session(
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     df = df[BOXING_COLUMNS]
 
-    df.to_csv("data/boxing.csv", index=False)
+    _save_csv(df, "data/boxing.csv")
 
 
 def update_boxing_entry(
@@ -402,11 +402,11 @@ def update_boxing_entry(
     df.loc[row_index, "comment"] = new_comment.strip()
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce")
-    df["rounds"] = pd.to_numeric(df["rounds"], errors="coerce")
-    df["round_length_min"] = pd.to_numeric(df["round_length_min"], errors="coerce")
-    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce")
-    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce")
+    df["duration_min"] = pd.to_numeric(df["duration_min"], errors="coerce").fillna(90.0)
+    df["rounds"] = pd.to_numeric(df["rounds"], errors="coerce").fillna(0)
+    df["round_length_min"] = pd.to_numeric(df["round_length_min"], errors="coerce").fillna(0)
+    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce").fillna(0)
+    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce").fillna(0)
 
     df["session_type"] = df["session_type"].fillna("")
     df["activities"] = df["activities"].fillna("")
@@ -420,7 +420,7 @@ def update_boxing_entry(
     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     df = df[BOXING_COLUMNS]
 
-    df.to_csv("data/boxing.csv", index=False)
+    _save_csv(df, "data/boxing.csv")
 
     return True
 
@@ -440,28 +440,205 @@ def delete_boxing_entry(row_index: int) -> bool:
         df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
     df = df[BOXING_COLUMNS]
-    df.to_csv("data/boxing.csv", index=False)
+    _save_csv(df, "data/boxing.csv")
 
     return True
+
 
 # -------------------------
 # GYM
 # -------------------------
 
+GYM_COLUMNS = [
+    "date",
+    "workout_type",
+    "exercise",
+    "sets",
+    "reps",
+    "weight_kg",
+    "load_adjustment_kg",
+    "bodyweight_kg",
+    "intensity",
+    "feeling_score",
+    "comment",
+]
+
+
 def load_gym_data() -> pd.DataFrame:
-    df = _load_csv(
-        "data/gym.csv",
-        ["date", "exercise", "sets", "reps", "weight_kg", "comment"],
-    )
+    df = _load_csv("data/gym.csv", GYM_COLUMNS)
+
+    for column in GYM_COLUMNS:
+        if column not in df.columns:
+            df[column] = ""
 
     df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["workout_type"] = df["workout_type"].fillna("")
     df["exercise"] = df["exercise"].fillna("")
-    df["sets"] = pd.to_numeric(df["sets"], errors="coerce")
-    df["reps"] = pd.to_numeric(df["reps"], errors="coerce")
-    df["weight_kg"] = pd.to_numeric(df["weight_kg"], errors="coerce")
+
+    df["sets"] = pd.to_numeric(df["sets"], errors="coerce").fillna(0)
+    df["reps"] = pd.to_numeric(df["reps"], errors="coerce").fillna(0)
+    df["weight_kg"] = pd.to_numeric(df["weight_kg"], errors="coerce").fillna(0)
+    df["load_adjustment_kg"] = pd.to_numeric(
+        df["load_adjustment_kg"],
+        errors="coerce",
+    ).fillna(0)
+    df["bodyweight_kg"] = pd.to_numeric(
+        df["bodyweight_kg"],
+        errors="coerce",
+    ).fillna(0)
+    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce").fillna(0)
+    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce").fillna(0)
+
     df["comment"] = df["comment"].fillna("")
 
     df = df.dropna(subset=["date"])
     df = df.sort_values("date").reset_index(drop=True)
 
     return df
+
+
+def save_gym_entry(
+    workout_date,
+    workout_type: str,
+    exercise: str,
+    sets: int,
+    reps: int,
+    weight_kg: float,
+    load_adjustment_kg: float = 0.0,
+    bodyweight_kg: float = 0.0,
+    intensity: int = 7,
+    feeling_score: int = 7,
+    comment: str = "",
+) -> None:
+    df = load_gym_data()
+
+    new_row = pd.DataFrame(
+        [
+            {
+                "date": pd.Timestamp(workout_date),
+                "workout_type": workout_type.strip(),
+                "exercise": exercise.strip(),
+                "sets": int(sets),
+                "reps": int(reps),
+                "weight_kg": float(weight_kg),
+                "load_adjustment_kg": float(load_adjustment_kg),
+                "bodyweight_kg": float(bodyweight_kg),
+                "intensity": int(intensity),
+                "feeling_score": int(feeling_score),
+                "comment": comment.strip(),
+            }
+        ]
+    )
+
+    df = pd.concat([df, new_row], ignore_index=True)
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["sets"] = pd.to_numeric(df["sets"], errors="coerce").fillna(0)
+    df["reps"] = pd.to_numeric(df["reps"], errors="coerce").fillna(0)
+    df["weight_kg"] = pd.to_numeric(df["weight_kg"], errors="coerce").fillna(0)
+    df["load_adjustment_kg"] = pd.to_numeric(
+        df["load_adjustment_kg"],
+        errors="coerce",
+    ).fillna(0)
+    df["bodyweight_kg"] = pd.to_numeric(
+        df["bodyweight_kg"],
+        errors="coerce",
+    ).fillna(0)
+    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce").fillna(0)
+    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce").fillna(0)
+
+    df["workout_type"] = df["workout_type"].fillna("")
+    df["exercise"] = df["exercise"].fillna("")
+    df["comment"] = df["comment"].fillna("")
+
+    df = df.dropna(subset=["date"])
+    df = df.sort_values("date").reset_index(drop=True)
+
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+    df = df[GYM_COLUMNS]
+
+    _save_csv(df, "data/gym.csv")
+
+
+def update_gym_entry(
+    row_index: int,
+    new_date,
+    new_workout_type: str,
+    new_exercise: str,
+    new_sets: int,
+    new_reps: int,
+    new_weight_kg: float,
+    new_load_adjustment_kg: float = 0.0,
+    new_bodyweight_kg: float = 0.0,
+    new_intensity: int = 7,
+    new_feeling_score: int = 7,
+    new_comment: str = "",
+) -> bool:
+    df = load_gym_data().reset_index(drop=True)
+
+    if df.empty:
+        return False
+
+    if row_index < 0 or row_index >= len(df):
+        return False
+
+    df.loc[row_index, "date"] = pd.Timestamp(new_date)
+    df.loc[row_index, "workout_type"] = new_workout_type.strip()
+    df.loc[row_index, "exercise"] = new_exercise.strip()
+    df.loc[row_index, "sets"] = int(new_sets)
+    df.loc[row_index, "reps"] = int(new_reps)
+    df.loc[row_index, "weight_kg"] = float(new_weight_kg)
+    df.loc[row_index, "load_adjustment_kg"] = float(new_load_adjustment_kg)
+    df.loc[row_index, "bodyweight_kg"] = float(new_bodyweight_kg)
+    df.loc[row_index, "intensity"] = int(new_intensity)
+    df.loc[row_index, "feeling_score"] = int(new_feeling_score)
+    df.loc[row_index, "comment"] = new_comment.strip()
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["sets"] = pd.to_numeric(df["sets"], errors="coerce").fillna(0)
+    df["reps"] = pd.to_numeric(df["reps"], errors="coerce").fillna(0)
+    df["weight_kg"] = pd.to_numeric(df["weight_kg"], errors="coerce").fillna(0)
+    df["load_adjustment_kg"] = pd.to_numeric(
+        df["load_adjustment_kg"],
+        errors="coerce",
+    ).fillna(0)
+    df["bodyweight_kg"] = pd.to_numeric(
+        df["bodyweight_kg"],
+        errors="coerce",
+    ).fillna(0)
+    df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce").fillna(0)
+    df["feeling_score"] = pd.to_numeric(df["feeling_score"], errors="coerce").fillna(0)
+
+    df["workout_type"] = df["workout_type"].fillna("")
+    df["exercise"] = df["exercise"].fillna("")
+    df["comment"] = df["comment"].fillna("")
+
+    df = df.dropna(subset=["date"])
+    df = df.sort_values("date").reset_index(drop=True)
+
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+    df = df[GYM_COLUMNS]
+
+    _save_csv(df, "data/gym.csv")
+
+    return True
+
+
+def delete_gym_entry(row_index: int) -> bool:
+    df = load_gym_data().reset_index(drop=True)
+
+    if df.empty:
+        return False
+
+    if row_index < 0 or row_index >= len(df):
+        return False
+
+    df = df.drop(index=row_index).reset_index(drop=True)
+
+    if not df.empty:
+        df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+
+    df = df[GYM_COLUMNS]
+    _save_csv(df, "data/gym.csv")
+
+    return True
