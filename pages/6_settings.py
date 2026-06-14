@@ -11,6 +11,10 @@ from utils.export_tools import (
     create_full_backup_zip,
     get_data_health_check,
 )
+from utils.restore_tools import (
+    inspect_restore_zip,
+    restore_selected_files_from_zip,
+)
 from utils.settings_loader import load_settings, save_settings
 from utils.style_loader import load_css
 
@@ -36,7 +40,7 @@ def _safe_text(value: object) -> str:
 def _status_class(status: object) -> str:
     status_text = str(status).strip().lower()
 
-    if status_text == "ok":
+    if status_text in ["ok", "ready"]:
         return "ok"
 
     if status_text == "warning":
@@ -99,17 +103,20 @@ def _health_summary_html(health_df) -> str:
 """
 
 
-def _health_file_list_html(health_df) -> str:
+def _file_list_html(df) -> str:
     rows = []
 
-    for _, row in health_df.iterrows():
+    for _, row in df.iterrows():
         file_name = _safe_text(row.get("file", "-"))
         status = _safe_text(row.get("status", "-"))
         status_class = _status_class(row.get("status", ""))
         row_count = _safe_text(row.get("rows", "-"))
-        last_date = _safe_text(row.get("last_date", "-"))
         size_kb = _safe_text(row.get("size_kb", "-"))
         notes = _safe_text(row.get("notes", "-"))
+
+        last_date = "-"
+        if "last_date" in df.columns:
+            last_date = _safe_text(row.get("last_date", "-"))
 
         rows.append(
             f'<div class="settings-file-row">'
@@ -233,7 +240,7 @@ if health_df.empty:
     st.warning("No data health information found.")
 else:
     st.markdown(_health_summary_html(health_df), unsafe_allow_html=True)
-    st.markdown(_health_file_list_html(health_df), unsafe_allow_html=True)
+    st.markdown(_file_list_html(health_df), unsafe_allow_html=True)
 
     with st.expander("Technical data health table"):
         display_health_df = health_df.copy()
@@ -324,5 +331,97 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 with st.expander("Preview AI review summary"):
     st.text(create_ai_review_summary(days=review_days))
+
+# ============================================================
+# RESTORE BACKUP
+# ============================================================
+
+st.markdown(
+    _section_card(
+        eyebrow="RESTORE",
+        title="Import / restore backup",
+        subtitle="Upload a previous backup zip and restore selected files. A safety backup is created automatically before overwrite.",
+    ),
+    unsafe_allow_html=True,
+)
+
+st.warning(
+    "Restore overwrites selected files in your data folder. Use this only when you want to recover from a backup."
+)
+
+uploaded_backup = st.file_uploader(
+    "Upload backup zip",
+    type=["zip"],
+    accept_multiple_files=False,
+)
+
+if uploaded_backup is not None:
+    zip_bytes = uploaded_backup.getvalue()
+    restore_preview_df = inspect_restore_zip(zip_bytes)
+
+    if restore_preview_df.empty:
+        st.error("Could not inspect backup zip.")
+    else:
+        ready_df = restore_preview_df[restore_preview_df["restore_allowed"] == True].copy()
+        ready_files = ready_df["file"].astype(str).tolist()
+
+        st.markdown(
+            """
+<div class="settings-export-card">
+    <div class="settings-export-eyebrow">BACKUP PREVIEW</div>
+    <div class="settings-export-title">Files found in uploaded backup</div>
+    <div class="settings-export-copy">
+        Only files marked Ready or Warning can be restored.
+    </div>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(_file_list_html(restore_preview_df), unsafe_allow_html=True)
+
+        with st.expander("Technical restore preview table"):
+            st.dataframe(
+                restore_preview_df,
+                use_container_width=True,
+                hide_index=True,
+            )
+
+        if not ready_files:
+            st.error("No restorable files were found in this backup.")
+        else:
+            selected_files = st.multiselect(
+                "Select files to restore",
+                options=ready_files,
+                default=ready_files,
+            )
+
+            confirm_restore = st.checkbox(
+                "I understand this will overwrite the selected current data files.",
+            )
+
+            restore_code = st.text_input(
+                'Type RESTORE to confirm',
+                value="",
+            )
+
+            restore_button = st.button(
+                "Restore selected files",
+                use_container_width=True,
+                type="primary",
+                disabled=not confirm_restore or restore_code.strip() != "RESTORE" or not selected_files,
+            )
+
+            if restore_button:
+                success, message = restore_selected_files_from_zip(
+                    zip_bytes=zip_bytes,
+                    selected_files=selected_files,
+                )
+
+                if success:
+                    st.success(message)
+                    st.info("Refresh or rerun the app if the restored values do not appear immediately.")
+                else:
+                    st.error(message)
 
 st.markdown("</div>", unsafe_allow_html=True)
