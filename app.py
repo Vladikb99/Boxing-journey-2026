@@ -120,6 +120,7 @@ def achievement_popup_html(achievement: dict) -> str:
 def render_achievement_dialog(achievements: list[dict]) -> None:
     unlocked_count = sum(1 for achievement in achievements if achievement["unlocked"])
     total_count = len(achievements)
+    locked_count = total_count - unlocked_count
 
     st.markdown(
         (
@@ -127,6 +128,7 @@ def render_achievement_dialog(achievements: list[dict]) -> None:
             f'<div class="achievement-dialog-eyebrow">ACHIEVEMENTS</div>'
             f'<div class="achievement-dialog-title">{unlocked_count}/{total_count} unlocked</div>'
             f'<div class="achievement-dialog-subtitle">'
+            f'Unlocked: {unlocked_count} · Locked: {locked_count}. '
             f'Active badges can disappear again if the condition is no longer true. '
             f'Milestone badges stay unlocked as long as the data proves you reached them.'
             f'</div>'
@@ -137,30 +139,102 @@ def render_achievement_dialog(achievements: list[dict]) -> None:
 
     categories = ["General", "Weight", "Running", "Boxing", "Gym"]
 
-    for category in categories:
-        category_achievements = [
+    tab_labels = ["Overview"] + categories
+    tabs = st.tabs(tab_labels)
+
+    with tabs[0]:
+        unlocked_achievements = [
             achievement
             for achievement in achievements
-            if achievement["category"] == category
+            if achievement["unlocked"]
         ]
 
-        if not category_achievements:
-            continue
+        locked_achievements = [
+            achievement
+            for achievement in achievements
+            if not achievement["unlocked"]
+        ]
 
-        badges_html = "".join(
-            render_achievement_badge(achievement)
-            for achievement in category_achievements
-        )
+        if unlocked_achievements:
+            unlocked_html = "".join(
+                render_achievement_badge(achievement)
+                for achievement in unlocked_achievements
+            )
 
-        st.markdown(
-            (
-                f'<div class="achievement-section">'
-                f'<div class="achievement-section-title">{category}</div>'
-                f'<div class="achievement-section-grid">{badges_html}</div>'
-                f'</div>'
-            ),
-            unsafe_allow_html=True,
-        )
+            st.markdown(
+                (
+                    f'<div class="achievement-section">'
+                    f'<div class="achievement-section-title">Unlocked badges</div>'
+                    f'<div class="achievement-section-grid">{unlocked_html}</div>'
+                    f'</div>'
+                ),
+                unsafe_allow_html=True,
+            )
+
+        if locked_achievements:
+            next_locked_html = "".join(
+                render_achievement_badge(achievement)
+                for achievement in locked_achievements[:8]
+            )
+
+            st.markdown(
+                (
+                    f'<div class="achievement-section">'
+                    f'<div class="achievement-section-title">Next locked badges</div>'
+                    f'<div class="achievement-section-grid">{next_locked_html}</div>'
+                    f'</div>'
+                ),
+                unsafe_allow_html=True,
+            )
+
+    for tab, category in zip(tabs[1:], categories):
+        with tab:
+            category_achievements = [
+                achievement
+                for achievement in achievements
+                if achievement["category"] == category
+            ]
+
+            if not category_achievements:
+                st.info(f"No {category.lower()} achievements found.")
+                continue
+
+            category_unlocked = sum(
+                1 for achievement in category_achievements
+                if achievement["unlocked"]
+            )
+
+            category_total = len(category_achievements)
+
+            st.markdown(
+                (
+                    f'<div class="achievement-section">'
+                    f'<div class="achievement-section-title">'
+                    f'{category} · {category_unlocked}/{category_total} unlocked'
+                    f'</div>'
+                    f'</div>'
+                ),
+                unsafe_allow_html=True,
+            )
+
+            sorted_achievements = sorted(
+                category_achievements,
+                key=lambda achievement: not achievement["unlocked"],
+            )
+
+            badges_html = "".join(
+                render_achievement_badge(achievement)
+                for achievement in sorted_achievements
+            )
+
+            st.markdown(
+                (
+                    f'<div class="achievement-section-grid">'
+                    f'{badges_html}'
+                    f'</div>'
+                ),
+                unsafe_allow_html=True,
+            )
 
 
 @st.dialog("Achievements", width="large")
