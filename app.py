@@ -546,9 +546,8 @@ load_css("assets/styles.css")
 st.markdown(
     """
 <style>
-.achievements-button {
+.top-action-button {
     position: fixed;
-    right: 32px;
     top: 28px;
     z-index: 9997;
     border: 1px solid rgba(201, 162, 39, 0.46);
@@ -568,16 +567,24 @@ st.markdown(
         0 0 18px rgba(201, 162, 39, 0.12);
 }
 
-.achievements-button:visited {
+.top-action-button:visited {
     color: rgba(245, 245, 245, 0.92) !important;
 }
 
-.achievements-button:hover {
+.top-action-button:hover {
     color: #C9A227 !important;
     border-color: rgba(201, 162, 39, 0.78);
     box-shadow:
         0 16px 42px rgba(0, 0, 0, 0.42),
         0 0 24px rgba(201, 162, 39, 0.18);
+}
+
+.statistics-button {
+    right: 170px;
+}
+
+.achievements-button {
+    right: 48px;
 }
 
 .achievement-dialog-header {
@@ -942,7 +949,7 @@ st.markdown(
 st.markdown('<div class="hero-divider"></div>', unsafe_allow_html=True)
 
 
-# SETTINGS + ACHIEVEMENTS BUTTONS
+# SETTINGS + STATS + BADGES BUTTONS
 
 st.markdown(
     """
@@ -955,8 +962,17 @@ st.markdown(
 
 st.markdown(
     """
-<a class="achievements-button" href="/?show_achievements=true" target="_self" title="Achievements">
-Achievements
+<a class="top-action-button statistics-button" href="/statistics" target="_self" title="Statistics">
+Stats
+</a>
+""",
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+<a class="top-action-button achievements-button" href="/?show_achievements=true" target="_self" title="Achievements">
+Badges
 </a>
 """,
     unsafe_allow_html=True,

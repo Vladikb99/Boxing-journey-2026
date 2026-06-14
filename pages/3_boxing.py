@@ -282,30 +282,6 @@ st.markdown(
     margin-top: 4px;
 }
 
-.badge-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 14px;
-}
-
-.achievement-badge {
-    border: 1px solid rgba(201, 162, 39, 0.22);
-    background: rgba(201, 162, 39, 0.065);
-    color: rgba(245,245,245,0.84);
-    border-radius: 999px;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-}
-
-.achievement-badge.locked {
-    border-color: rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.025);
-    color: rgba(245,245,245,0.38);
-}
-
 .achievement-popup {
     position: fixed;
     right: 26px;
@@ -581,53 +557,6 @@ def calculate_weekly_streaks(df: pd.DataFrame, weekly_goal: int = 4) -> tuple[in
     return current_streak, best_streak
 
 
-def build_boxing_achievements(
-    total_sessions: int,
-    total_sparring_rounds: int,
-    total_sparring_sessions: int,
-    weekly_sessions: int,
-    best_streak: int,
-) -> list[dict]:
-    return [
-        {
-            "id": "boxing_first_session",
-            "name": "First boxing session",
-            "unlocked": total_sessions >= 1,
-            "detail": "You logged your first boxing session.",
-        },
-        {
-            "id": "boxing_10_sessions",
-            "name": "10 boxing sessions",
-            "unlocked": total_sessions >= 10,
-            "detail": "You logged 10 boxing sessions.",
-        },
-        {
-            "id": "boxing_first_sparring",
-            "name": "First sparring logged",
-            "unlocked": total_sparring_sessions >= 1,
-            "detail": "You logged your first sparring session.",
-        },
-        {
-            "id": "boxing_25_sparring_rounds",
-            "name": "25 sparring rounds",
-            "unlocked": total_sparring_rounds >= 25,
-            "detail": "You reached 25 total sparring rounds.",
-        },
-        {
-            "id": "boxing_full_week",
-            "name": "Full boxing week",
-            "unlocked": weekly_sessions >= 4,
-            "detail": "You logged 4 sessions in the last 7 days.",
-        },
-        {
-            "id": "boxing_3_week_streak",
-            "name": "3-week streak",
-            "unlocked": best_streak >= 3,
-            "detail": "You completed 3 strong boxing weeks.",
-        },
-    ]
-
-
 def consistency_face_html(status: str) -> str:
     return f"""
 <div class="consistency-face-wrap">
@@ -697,53 +626,10 @@ def streak_card_html(
 """
 
 
-def achievement_badges_html(
-    eyebrow: str,
-    title: str,
-    detail: str,
-    achievements: list[dict],
-) -> str:
-    badge_html = ""
-
-    for achievement in achievements:
-        name = escape(str(achievement["name"]))
-        unlocked = bool(achievement["unlocked"])
-        locked_class = "" if unlocked else " locked"
-
-        badge_html += f'<span class="achievement-badge{locked_class}">{name}</span>'
-
-    return f"""
-<div class="polish-card soft-appear">
-<div class="polish-eyebrow">{escape(eyebrow)}</div>
-<div class="polish-title">{escape(title)}</div>
-<div class="polish-subtitle">{escape(detail)}</div>
-
-<div class="badge-row">
-{badge_html}
-</div>
-</div>
-"""
-
-
-def achievement_popup_html(name: str, detail: str = "") -> str:
-    detail_html = ""
-
-    if detail:
-        detail_html = f'<div class="achievement-popup-detail">{escape(detail)}</div>'
-
-    return f"""
-<div class="achievement-popup">
-<div class="achievement-popup-top">Achievement unlocked</div>
-<div class="achievement-popup-title">{escape(name)}</div>
-{detail_html}
-</div>
-"""
-
-
 def make_sparring_chart(sparring_df: pd.DataFrame) -> go.Figure:
     chart_df = sparring_df.copy()
     chart_df = chart_df.sort_values("date")
-    chart_df["date_label"] = chart_df["date"].dt.strftime("%Y-%m-%d")
+    chart_df["date_label"] = chart_df["date"].dt.strftime("%d %b")
 
     fig = go.Figure()
 
@@ -753,8 +639,16 @@ def make_sparring_chart(sparring_df: pd.DataFrame) -> go.Figure:
             y=chart_df["rounds"],
             mode="lines+markers",
             name="Sparring rounds",
-            line=dict(width=3, color="#C9A227"),
-            marker=dict(size=8, color="#C9A227"),
+            line=dict(
+                width=3,
+                color="#C9A227",
+                shape="spline",
+            ),
+            marker=dict(
+                size=8,
+                color="#C9A227",
+            ),
+            hovertemplate="%{x}<br>%{y:.0f} rounds<extra></extra>",
         )
     )
 
@@ -764,17 +658,28 @@ def make_sparring_chart(sparring_df: pd.DataFrame) -> go.Figure:
             y=chart_df["feeling_score"],
             mode="lines+markers",
             name="Feeling score",
-            line=dict(width=2, color="rgba(245,245,245,0.55)"),
-            marker=dict(size=7, color="rgba(245,245,245,0.75)"),
+            line=dict(
+                width=2,
+                color="rgba(245,245,245,0.55)",
+                shape="spline",
+            ),
+            marker=dict(
+                size=7,
+                color="rgba(245,245,245,0.75)",
+            ),
+            hovertemplate="%{x}<br>%{y:.1f}/10 feeling<extra></extra>",
         )
     )
 
     fig.update_layout(
         height=360,
-        margin=dict(l=10, r=10, t=35, b=10),
+        margin=dict(l=45, r=25, t=35, b=55),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="rgba(245,245,245,0.78)"),
+        font=dict(
+            color="rgba(245,245,245,0.78)",
+            family="Switzer, sans-serif",
+        ),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -783,16 +688,22 @@ def make_sparring_chart(sparring_df: pd.DataFrame) -> go.Figure:
             x=1,
         ),
         xaxis=dict(
+            title=None,
+            type="category",
             showgrid=False,
             zeroline=False,
-            title="",
         ),
         yaxis=dict(
+            title="Rounds / score",
             showgrid=True,
             gridcolor="rgba(255,255,255,0.08)",
             zeroline=False,
-            title="Rounds / score",
             rangemode="tozero",
+        ),
+        hoverlabel=dict(
+            bgcolor="#111111",
+            bordercolor="#C9A227",
+            font=dict(color="#F5F5F5"),
         ),
     )
 
@@ -1051,7 +962,6 @@ sparring_df = (
     else boxing_df.copy()
 )
 
-total_sparring_sessions = len(sparring_df)
 total_sparring_rounds = int(sparring_df["rounds"].sum()) if not sparring_df.empty else 0
 sparring_text = "Done" if sparring_completed else "Not yet"
 
@@ -1145,48 +1055,6 @@ st.markdown(
     ),
     unsafe_allow_html=True,
 )
-
-boxing_achievements = build_boxing_achievements(
-    total_sessions=total_sessions,
-    total_sparring_rounds=total_sparring_rounds,
-    total_sparring_sessions=total_sparring_sessions,
-    weekly_sessions=weekly_sessions,
-    best_streak=best_streak,
-)
-
-unlocked_achievement_ids = {
-    achievement["id"]
-    for achievement in boxing_achievements
-    if achievement["unlocked"]
-}
-
-seen_key = "seen_boxing_achievements"
-
-if seen_key not in st.session_state:
-    st.session_state[seen_key] = list(unlocked_achievement_ids)
-
-seen_achievement_ids = set(st.session_state[seen_key])
-new_achievement_ids = unlocked_achievement_ids - seen_achievement_ids
-
-if new_achievement_ids:
-    new_achievement = next(
-        achievement
-        for achievement in boxing_achievements
-        if achievement["id"] in new_achievement_ids
-    )
-
-    st.markdown(
-        achievement_popup_html(
-            name=new_achievement["name"],
-            detail=new_achievement["detail"],
-        ),
-        unsafe_allow_html=True,
-    )
-
-    st.session_state[seen_key] = list(
-        seen_achievement_ids | new_achievement_ids
-    )
-
 
 if not boxing_df.empty:
     latest_session = boxing_df.iloc[-1]
@@ -1371,6 +1239,7 @@ if not sparring_df.empty:
     st.plotly_chart(
         make_sparring_chart(sparring_df),
         use_container_width=True,
+        config={"displayModeBar": False},
         key=f"sparring_chart_{len(sparring_df)}_{total_sparring_rounds}",
     )
 

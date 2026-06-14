@@ -260,7 +260,7 @@ def format_gym_option(index: int, df: pd.DataFrame) -> str:
 def make_main_lift_chart(lift_df: pd.DataFrame, selected_lift: str) -> go.Figure:
     chart_df = lift_df.copy()
     chart_df = chart_df.sort_values("date")
-    chart_df["date_label"] = chart_df["date"].dt.strftime("%Y-%m-%d")
+    chart_df["date_label"] = chart_df["date"].dt.strftime("%d %b")
 
     fig = go.Figure()
 
@@ -292,7 +292,9 @@ def make_main_lift_chart(lift_df: pd.DataFrame, selected_lift: str) -> go.Figure
         ),
         xaxis=dict(
             title=None,
+            type="category",
             showgrid=False,
+            zeroline=False,
         ),
         yaxis=dict(
             title=None,
@@ -319,7 +321,7 @@ def make_main_lift_chart(lift_df: pd.DataFrame, selected_lift: str) -> go.Figure
 def make_volume_chart(session_df: pd.DataFrame) -> go.Figure:
     chart_df = session_df.copy()
     chart_df = chart_df.sort_values("date")
-    chart_df["date_label"] = chart_df["date"].dt.strftime("%Y-%m-%d")
+    chart_df["date_label"] = chart_df["date"].dt.strftime("%d %b")
 
     fig = go.Figure()
 
@@ -351,7 +353,9 @@ def make_volume_chart(session_df: pd.DataFrame) -> go.Figure:
         ),
         xaxis=dict(
             title=None,
+            type="category",
             showgrid=False,
+            zeroline=False,
         ),
         yaxis=dict(
             title=None,
