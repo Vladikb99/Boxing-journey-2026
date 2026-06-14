@@ -1283,3 +1283,73 @@ header {
         gap: 6px;
     }
 }
+
+/* CUSTOM STATUS FACE */
+
+.status-face-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 64px;
+}
+
+.status-face {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    min-height: 58px;
+    border: 1.5px solid rgba(201, 162, 39, 0.78);
+    border-radius: 999px;
+    position: relative;
+    background:
+        radial-gradient(circle at 35% 28%, rgba(255, 221, 95, 0.14), transparent 30%),
+        linear-gradient(145deg, rgba(201, 162, 39, 0.09), rgba(255, 255, 255, 0.02));
+    box-shadow:
+        0 0 20px rgba(201, 162, 39, 0.10),
+        inset 0 0 16px rgba(201, 162, 39, 0.06);
+}
+
+.status-face-eye {
+    position: absolute;
+    top: 18px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #C9A227;
+    box-shadow: 0 0 8px rgba(201, 162, 39, 0.45);
+}
+
+.status-face-eye-left {
+    left: 17px;
+}
+
+.status-face-eye-right {
+    right: 17px;
+}
+
+.status-face-mouth {
+    position: absolute;
+    left: 16px;
+    width: 26px;
+}
+
+.status-face-happy .status-face-mouth {
+    top: 32px;
+    height: 13px;
+    border-bottom: 2px solid #C9A227;
+    border-radius: 0 0 24px 24px;
+}
+
+.status-face-medium .status-face-mouth {
+    top: 39px;
+    height: 0;
+    border-bottom: 2px solid #C9A227;
+    border-radius: 999px;
+}
+
+.status-face-sad .status-face-mouth {
+    top: 35px;
+    height: 13px;
+    border-top: 2px solid #C9A227;
+    border-radius: 24px 24px 0 0;
+}

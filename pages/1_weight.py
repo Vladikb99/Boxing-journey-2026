@@ -4,6 +4,7 @@ import streamlit as st
 
 from components.home_button import home_button
 from components.page_header import page_header
+from components.status_face import status_face_html
 from utils.data_loader import (
     delete_weight_entry,
     load_weight_data,
@@ -96,9 +97,11 @@ if len(weight_df) >= 2:
     previous_weight = float(weight_df["weight_kg"].iloc[-2])
     weight_change = current_weight - previous_weight
     weight_change_text = f"{weight_change:+.1f} kg"
+    has_previous_weight = True
 else:
     weight_change = 0.0
     weight_change_text = "No previous data"
+    has_previous_weight = False
 
 remaining_kg = current_weight - GOAL_WEIGHT
 bmi = current_weight / (HEIGHT_M ** 2)
@@ -119,6 +122,40 @@ days_between = max((latest_date_raw - first_date).days, 1)
 average_daily_change = total_change / days_between
 
 days_logged = len(weight_df)
+def get_weight_status(
+    current_weight: float,
+    goal_weight: float,
+    latest_change: float,
+    has_previous: bool,
+) -> tuple[str, str, str]:
+    if not has_previous:
+        return "medium", "No trend yet", "Add more entries"
+
+    if abs(current_weight - goal_weight) <= 0.5:
+        return "happy", "Goal zone", "Close to target"
+
+    goal_is_lower = goal_weight < current_weight
+
+    if abs(latest_change) < 0.1:
+        return "medium", "Stable", "No real change"
+
+    moving_toward_goal = latest_change < 0 if goal_is_lower else latest_change > 0
+
+    if moving_toward_goal:
+        return "happy", "On track", f"{latest_change:+.1f} kg from last entry"
+
+    if abs(latest_change) <= 0.3:
+        return "medium", "Slightly off", f"{latest_change:+.1f} kg from last entry"
+
+    return "sad", "Off track", f"{latest_change:+.1f} kg from last entry"
+
+
+weight_status_face, weight_status_label, weight_status_detail = get_weight_status(
+    current_weight=current_weight,
+    goal_weight=GOAL_WEIGHT,
+    latest_change=weight_change,
+    has_previous=has_previous_weight,
+)
 
 
 @st.dialog("Manage weight entries", width="large")
@@ -241,9 +278,9 @@ st.markdown(
 
 <div class="weight-status-grid">
 <div>
-<div class="status-label">Current weight</div>
-<div class="status-value">{current_weight:.1f} kg</div>
-<div class="status-pill">{weight_change_text}</div>
+<div class="status-label">Weight trend</div>
+<div class="status-value">{status_face_html(weight_status_face)}</div>
+<div class="status-muted">{weight_status_label}</div>
 </div>
 
 <div>
@@ -301,8 +338,8 @@ st.markdown(
 </div>
 
 <div class="insight-card">
-<div class="insight-label">Average / day</div>
-<div class="insight-value">{average_daily_change:+.2f} kg</div>
+<div class="insight-label">BMI</div>
+<div class="insight-value">{bmi:.1f}</div>
 </div>
 
 <div class="insight-card">

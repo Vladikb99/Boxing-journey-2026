@@ -7,6 +7,7 @@ import streamlit as st
 
 from components.home_button import home_button
 from components.page_header import page_header
+from components.status_face import status_face_html
 from utils.calculations import format_pace
 from utils.data_loader import (
     delete_run_entry,
@@ -85,6 +86,16 @@ def format_run_option(index: int, df: pd.DataFrame) -> str:
         f"{distance:.1f} km — "
         f"{format_pace(pace)}"
     )
+
+
+def get_running_status(weekly_runs: int) -> tuple[str, str, str]:
+    if weekly_runs >= 2:
+        return "happy", "Good", "2+ runs in the last 7 days"
+
+    if weekly_runs == 1:
+        return "medium", "Medium", "1 run in the last 7 days"
+
+    return "sad", "Bad", "No runs in the last 7 days"
 
 
 @st.dialog("Manage run entries", width="large")
@@ -271,10 +282,15 @@ else:
         (runs_df["date"] <= week_end)
     ]
 
+weekly_runs = len(week_df)
 weekly_distance = float(week_df["distance_km"].sum()) if not week_df.empty else 0.0
 total_distance = float(runs_df["distance_km"].sum()) if not runs_df.empty else 0.0
 total_runs = len(runs_df)
 longest_run = float(runs_df["distance_km"].max()) if not runs_df.empty else 0.0
+
+running_status_face, running_status_label, running_status_detail = get_running_status(
+    weekly_runs=weekly_runs,
+)
 
 if not runs_df.empty:
     latest_run = runs_df.iloc[-1]
@@ -310,9 +326,15 @@ st.markdown(
 
 <div class="weight-status-grid">
 <div>
+<div class="status-label">Roadwork</div>
+<div class="status-value">{status_face_html(running_status_face)}</div>
+<div class="status-muted">{running_status_label}</div>
+</div>
+
+<div>
 <div class="status-label">This week</div>
 <div class="status-value">{weekly_distance:.1f} km</div>
-<div class="status-muted">Last 7 days</div>
+<div class="status-muted">{running_status_detail}</div>
 </div>
 
 <div>
@@ -325,12 +347,6 @@ st.markdown(
 <div class="status-label">Latest pace</div>
 <div class="status-value">{latest_pace_text}</div>
 <div class="status-muted">min/km</div>
-</div>
-
-<div>
-<div class="status-label">Total runs</div>
-<div class="status-value">{total_runs}</div>
-<div class="status-muted">Logged sessions</div>
 </div>
 </div>
 </div>
@@ -345,6 +361,11 @@ st.markdown(
     f"""
 <div class="insight-grid">
 <div class="insight-card">
+<div class="insight-label">Total runs</div>
+<div class="insight-value">{total_runs}</div>
+</div>
+
+<div class="insight-card">
 <div class="insight-label">Total distance</div>
 <div class="insight-value">{total_distance:.1f} km</div>
 </div>
@@ -352,11 +373,6 @@ st.markdown(
 <div class="insight-card">
 <div class="insight-label">Average pace</div>
 <div class="insight-value">{average_pace_text}</div>
-</div>
-
-<div class="insight-card">
-<div class="insight-label">Best pace</div>
-<div class="insight-value">{best_pace_text}</div>
 </div>
 
 <div class="insight-card">
@@ -581,7 +597,7 @@ with st.container(border=True):
                 max_value=100.0,
                 value=float(distance_default),
                 step=0.1,
-                key="run_distance_km",
+                key=f"run_distance_km_{form_version}",
             )
 
         with col_duration:
@@ -622,9 +638,9 @@ with st.container(border=True):
         )
 
         submitted = st.form_submit_button(
-    "Save run",
-    use_container_width=True,
-)
+            "Save run",
+            use_container_width=True,
+        )
 
 if submitted:
     if duration_min is None or duration_min <= 0:
