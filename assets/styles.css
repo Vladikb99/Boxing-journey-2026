@@ -1572,3 +1572,289 @@ header {
         transform: translateX(34px) translateY(8px) scale(0.96);
     }
 }
+
+/* SETTINGS PAGE POLISH */
+
+.settings-page {
+    padding-bottom: 40px;
+}
+
+.settings-section-card {
+    border: 1px solid rgba(201, 162, 39, 0.20);
+    border-radius: 18px;
+    padding: 22px 24px;
+    margin-top: 24px;
+    margin-bottom: 18px;
+    background:
+        radial-gradient(circle at top left, rgba(201, 162, 39, 0.10), transparent 32%),
+        linear-gradient(145deg, rgba(17, 17, 17, 0.86), rgba(8, 8, 8, 0.94));
+    box-shadow:
+        0 18px 42px rgba(0, 0, 0, 0.24),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.settings-section-eyebrow {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #C9A227;
+    margin-bottom: 8px;
+}
+
+.settings-section-title {
+    font-size: 25px;
+    font-weight: 900;
+    color: rgba(245, 245, 245, 0.96);
+    letter-spacing: -0.4px;
+}
+
+.settings-section-subtitle {
+    max-width: 760px;
+    margin-top: 6px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: rgba(245, 245, 245, 0.56);
+}
+
+/* Settings form */
+
+.settings-form-shell div[data-testid="stForm"] {
+    border: 1px solid rgba(201, 162, 39, 0.18);
+    border-radius: 18px;
+    padding: 22px 24px;
+    background: rgba(17, 17, 17, 0.64);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
+}
+
+/* Health summary */
+
+.settings-health-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.settings-health-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 124px;
+    border: 1px solid rgba(201, 162, 39, 0.18);
+    border-radius: 18px;
+    padding: 18px 20px;
+    background:
+        radial-gradient(circle at top right, rgba(201, 162, 39, 0.08), transparent 38%),
+        linear-gradient(145deg, rgba(17, 17, 17, 0.88), rgba(8, 8, 8, 0.94));
+    transition: 0.22s ease;
+}
+
+.settings-health-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(201, 162, 39, 0.42);
+    box-shadow: 0 14px 34px rgba(201, 162, 39, 0.06);
+}
+
+.settings-health-label {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: rgba(201, 162, 39, 0.90);
+    margin-bottom: 16px;
+}
+
+.settings-health-value {
+    font-size: 34px;
+    font-weight: 900;
+    color: #F5F5F5;
+    line-height: 1;
+}
+
+.settings-health-detail {
+    margin-top: 10px;
+    font-size: 13px;
+    color: rgba(245, 245, 245, 0.48);
+}
+
+.settings-health-card.health-ok {
+    border-color: rgba(32, 224, 112, 0.20);
+}
+
+.settings-health-card.health-warning {
+    border-color: rgba(201, 162, 39, 0.28);
+}
+
+.settings-health-card.health-bad {
+    border-color: rgba(255, 107, 97, 0.24);
+}
+
+/* File list */
+
+.settings-file-list {
+    border: 1px solid rgba(201, 162, 39, 0.16);
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(17, 17, 17, 0.55);
+    margin-bottom: 16px;
+}
+
+.settings-file-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.5fr) 0.7fr 0.8fr 0.7fr 90px;
+    gap: 16px;
+    align-items: center;
+    padding: 15px 18px;
+    border-top: 1px solid rgba(245, 245, 245, 0.06);
+}
+
+.settings-file-row:first-child {
+    border-top: none;
+}
+
+.settings-file-name {
+    font-size: 15px;
+    font-weight: 900;
+    color: rgba(245, 245, 245, 0.94);
+}
+
+.settings-file-note {
+    margin-top: 4px;
+    font-size: 12px;
+    color: rgba(245, 245, 245, 0.45);
+}
+
+.settings-file-stat span {
+    display: block;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(201, 162, 39, 0.72);
+    margin-bottom: 4px;
+}
+
+.settings-file-stat strong {
+    font-size: 14px;
+    font-weight: 800;
+    color: rgba(245, 245, 245, 0.88);
+}
+
+.settings-status-pill {
+    justify-self: end;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.settings-status-pill.ok {
+    background: rgba(32, 224, 112, 0.14);
+    color: #20E070;
+    border: 1px solid rgba(32, 224, 112, 0.22);
+}
+
+.settings-status-pill.warning {
+    background: rgba(201, 162, 39, 0.14);
+    color: #F0D36A;
+    border: 1px solid rgba(201, 162, 39, 0.24);
+}
+
+.settings-status-pill.bad {
+    background: rgba(255, 107, 97, 0.13);
+    color: #FF6B61;
+    border: 1px solid rgba(255, 107, 97, 0.24);
+}
+
+.settings-status-pill.neutral {
+    background: rgba(245, 245, 245, 0.08);
+    color: rgba(245, 245, 245, 0.65);
+    border: 1px solid rgba(245, 245, 245, 0.10);
+}
+
+/* Export cards */
+
+.settings-export-section {
+    margin-top: 6px;
+}
+
+.settings-export-card {
+    min-height: 138px;
+    border: 1px solid rgba(201, 162, 39, 0.18);
+    border-radius: 18px;
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    background:
+        radial-gradient(circle at top right, rgba(201, 162, 39, 0.09), transparent 36%),
+        linear-gradient(145deg, rgba(17, 17, 17, 0.84), rgba(8, 8, 8, 0.96));
+    transition: 0.22s ease;
+}
+
+.settings-export-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(201, 162, 39, 0.42);
+    box-shadow: 0 14px 34px rgba(201, 162, 39, 0.06);
+}
+
+.settings-export-eyebrow {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+    color: #C9A227;
+    margin-bottom: 12px;
+}
+
+.settings-export-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: rgba(245, 245, 245, 0.96);
+    margin-bottom: 8px;
+}
+
+.settings-export-copy {
+    font-size: 13px;
+    line-height: 1.45;
+    color: rgba(245, 245, 245, 0.52);
+}
+
+/* Download buttons inside settings */
+
+.settings-export-section [data-testid="stDownloadButton"] button {
+    border: 1px solid rgba(201, 162, 39, 0.35);
+    border-radius: 14px;
+    background:
+        linear-gradient(135deg, rgba(201, 162, 39, 0.18), rgba(201, 162, 39, 0.05));
+    color: #F5F5F5;
+    font-weight: 800;
+    transition: 0.22s ease;
+}
+
+.settings-export-section [data-testid="stDownloadButton"] button:hover {
+    border-color: rgba(201, 162, 39, 0.78);
+    background:
+        linear-gradient(135deg, rgba(201, 162, 39, 0.28), rgba(201, 162, 39, 0.08));
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+
+@media (max-width: 950px) {
+    .settings-health-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .settings-file-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .settings-status-pill {
+        justify-self: start;
+    }
+}
+
+@media (max-width: 650px) {
+    .settings-health-grid {
+        grid-template-columns: 1fr;
+    }
+}
