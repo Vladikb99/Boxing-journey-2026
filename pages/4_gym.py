@@ -9,7 +9,12 @@ from components.home_button import home_button
 from components.level_bar import level_bar_html
 from components.page_header import page_header
 from components.status_face import status_face_html
-from utils.data_loader import load_gym_data, save_gym_entry
+from utils.data_loader import (
+    delete_gym_entry,
+    load_gym_data,
+    save_gym_entry,
+    update_gym_entry,
+)
 from utils.style_loader import load_css
 
 
@@ -131,6 +136,14 @@ MAIN_LIFTS = [
 if "gym_form_version" not in st.session_state:
     st.session_state.gym_form_version = 0
 
+if "open_gym_manager" not in st.session_state:
+    st.session_state.open_gym_manager = False
+
+if st.query_params.get("manage_gym") == "true":
+    st.session_state.open_gym_manager = True
+    st.query_params.clear()
+    st.rerun()
+
 st.markdown('<div class="page-wrapper">', unsafe_allow_html=True)
 
 
@@ -231,6 +244,17 @@ def get_gym_status(weekly_sessions: int) -> tuple[str, str, str]:
         return "medium", "Medium", "1 gym session in the last 7 days"
 
     return "sad", "Bad", "No gym sessions in the last 7 days"
+
+
+def format_gym_option(index: int, df: pd.DataFrame) -> str:
+    row = df.loc[index]
+    date_label = row["date"].strftime("%Y-%m-%d")
+    exercise = str(row["exercise"]).strip() or "Exercise"
+    sets = int(row["sets"])
+    reps = int(row["reps"])
+    weight = float(row["weight_kg"])
+
+    return f"{date_label} — {exercise} — {sets}x{reps} @ {weight:.1f} kg"
 
 
 def make_main_lift_chart(lift_df: pd.DataFrame, selected_lift: str) -> go.Figure:
@@ -396,7 +420,206 @@ def make_top_exercises_chart(exercise_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
+@st.dialog("Manage gym entries", width="large")
+def gym_manager_dialog() -> None:
+    manage_df = clean_gym_data(load_gym_data()).reset_index(drop=True)
+
+    if manage_df.empty:
+        st.warning("No gym entries available.")
+
+        if st.button("Close", use_container_width=True):
+            st.session_state.open_gym_manager = False
+            st.query_params.clear()
+            st.rerun()
+
+        return
+
+    st.markdown(
+        """
+<div class="form-section-title">MANAGE GYM ENTRIES</div>
+<div class="form-section-subtitle">Edit or delete logged strength exercises.</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    entry_options = list(manage_df.index[::-1])
+
+    selected_index = st.selectbox(
+        "Select entry",
+        options=entry_options,
+        format_func=lambda index: format_gym_option(index, manage_df),
+    )
+
+    selected_row = manage_df.loc[selected_index]
+    selected_date = selected_row["date"].date()
+    selected_workout_type = str(selected_row["workout_type"]).strip() or "Upper body"
+    selected_exercise = str(selected_row["exercise"]).strip()
+    selected_sets = int(selected_row["sets"])
+    selected_reps = int(selected_row["reps"])
+    selected_weight = float(selected_row["weight_kg"])
+    selected_intensity = int(selected_row["intensity"])
+    selected_feeling = int(selected_row["feeling_score"])
+    selected_comment = str(selected_row["comment"]).strip()
+
+    if selected_workout_type not in WORKOUT_TYPES:
+        selected_workout_type = "Other"
+
+    st.markdown(
+        f"""
+<div class="selected-entry-card">
+<div class="selected-entry-label">SELECTED GYM ENTRY</div>
+<div class="selected-entry-value">{selected_date} — {escape(selected_exercise or "Exercise")}</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    with st.form(f"edit_gym_entry_{selected_index}"):
+        edited_date = st.date_input(
+            "Date",
+            value=selected_date,
+        )
+
+        edited_workout_type = st.selectbox(
+            "Workout type",
+            WORKOUT_TYPES,
+            index=WORKOUT_TYPES.index(selected_workout_type),
+        )
+
+        edited_exercise = st.text_input(
+            "Exercise",
+            value=selected_exercise,
+        )
+
+        col_sets, col_reps, col_weight = st.columns(3)
+
+        with col_sets:
+            edited_sets = st.number_input(
+                "Sets",
+                min_value=1,
+                max_value=20,
+                value=max(1, selected_sets),
+                step=1,
+            )
+
+        with col_reps:
+            edited_reps = st.number_input(
+                "Reps",
+                min_value=1,
+                max_value=100,
+                value=max(1, selected_reps),
+                step=1,
+            )
+
+        with col_weight:
+            edited_weight = st.number_input(
+                "Weight / effective load (kg)",
+                min_value=0.0,
+                max_value=500.0,
+                value=selected_weight,
+                step=0.5,
+            )
+
+        edited_volume = edited_sets * edited_reps * edited_weight
+        edited_estimated_1rm = edited_weight * (1 + edited_reps / 30)
+
+        st.markdown(
+            f"""
+<div class="running-pace-preview">
+<span>Exercise volume</span>
+<strong>{format_volume(edited_volume)}</strong>
+</div>
+<div class="running-pace-preview">
+<span>Estimated 1RM</span>
+<strong>{format_weight(edited_estimated_1rm)}</strong>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        col_intensity, col_feeling = st.columns(2)
+
+        with col_intensity:
+            edited_intensity = st.slider(
+                "Intensity",
+                min_value=1,
+                max_value=10,
+                value=max(1, min(selected_intensity, 10)),
+            )
+
+        with col_feeling:
+            edited_feeling = st.slider(
+                "Feeling score",
+                min_value=1,
+                max_value=10,
+                value=max(1, min(selected_feeling, 10)),
+            )
+
+        edited_comment = st.text_area(
+            "Comment",
+            value=selected_comment,
+            height=90,
+        )
+
+        col_save, col_delete = st.columns(2)
+
+        with col_save:
+            save_changes = st.form_submit_button(
+                "Save changes",
+                use_container_width=True,
+            )
+
+        with col_delete:
+            delete_entry = st.form_submit_button(
+                "Delete entry",
+                use_container_width=True,
+            )
+
+    if save_changes:
+        update_gym_entry(
+            row_index=selected_index,
+            new_date=edited_date,
+            new_workout_type=edited_workout_type,
+            new_exercise=edited_exercise,
+            new_sets=edited_sets,
+            new_reps=edited_reps,
+            new_weight_kg=edited_weight,
+            new_load_adjustment_kg=0.0,
+            new_bodyweight_kg=0.0,
+            new_intensity=edited_intensity,
+            new_feeling_score=edited_feeling,
+            new_comment=edited_comment,
+        )
+
+        st.session_state.open_gym_manager = False
+        st.session_state.save_feedback_message = "Gym entry updated"
+        st.query_params.clear()
+        st.rerun()
+
+    if delete_entry:
+        delete_gym_entry(selected_index)
+
+        st.session_state.open_gym_manager = False
+        st.session_state.save_feedback_message = "Gym entry deleted"
+        st.query_params.clear()
+        st.rerun()
+
+    if st.button("Close", use_container_width=True):
+        st.session_state.open_gym_manager = False
+        st.query_params.clear()
+        st.rerun()
+
+
 show_save_feedback()
+
+st.markdown(
+    """
+<a class="weight-manage-button" href="/gym?manage_gym=true" target="_self" title="Manage gym entries">
+✎
+</a>
+""",
+    unsafe_allow_html=True,
+)
 
 gym_df = clean_gym_data(load_gym_data())
 
@@ -845,5 +1068,8 @@ if not gym_df.empty:
             use_container_width=True,
             hide_index=True,
         )
+
+if st.session_state.open_gym_manager:
+    gym_manager_dialog()
 
 st.markdown("</div>", unsafe_allow_html=True)
