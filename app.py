@@ -2,7 +2,6 @@ import base64
 from html import escape
 from pathlib import Path
 
-import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -10,12 +9,13 @@ from components.metric_card import metric_card
 from components.quote_card import quote_card
 from components.weekly_overview import weekly_overview
 from config import APP_NAME, APP_YEAR
+from utils.achievements import build_achievements as build_data_achievements
 from utils.calculations import (
-    calculate_weight_change,
     calculate_last_7_day_weight_change,
-    calculate_weekly_run_distance,
     calculate_weekly_boxing_sessions,
     calculate_weekly_gym_sessions,
+    calculate_weekly_run_distance,
+    calculate_weight_change,
     get_latest_run_summary,
 )
 from utils.data_loader import (
@@ -36,6 +36,12 @@ st.set_page_config(
     layout="wide",
 )
 
+load_css("assets/styles.css")
+
+
+# ============================================================
+# HELPERS
+# ============================================================
 
 def image_to_base64(image_path: str) -> str:
     path = Path(image_path)
@@ -46,7 +52,11 @@ def image_to_base64(image_path: str) -> str:
     return base64.b64encode(path.read_bytes()).decode()
 
 
-def calculate_goal_progress(start_weight: float, current_weight: float, goal_weight: float) -> float:
+def calculate_goal_progress(
+    start_weight: float,
+    current_weight: float,
+    goal_weight: float,
+) -> float:
     if start_weight == goal_weight:
         return 1.0 if current_weight <= goal_weight else 0.0
 
@@ -55,7 +65,10 @@ def calculate_goal_progress(start_weight: float, current_weight: float, goal_wei
     return max(0.0, min(progress, 1.0))
 
 
-def calculate_next_milestone(current_weight: float, goal_weight: float) -> tuple[float, float]:
+def calculate_next_milestone(
+    current_weight: float,
+    goal_weight: float,
+) -> tuple[float, float]:
     if current_weight <= goal_weight:
         return goal_weight, 0.0
 
@@ -70,387 +83,38 @@ def calculate_next_milestone(current_weight: float, goal_weight: float) -> tuple
     return next_milestone, milestone_remaining
 
 
-def clean_date_column(df: pd.DataFrame) -> pd.DataFrame:
-    if df.empty or "date" not in df.columns:
-        return df.copy()
-
-    cleaned_df = df.copy()
-    cleaned_df["date"] = pd.to_datetime(cleaned_df["date"], errors="coerce")
-    cleaned_df = cleaned_df.dropna(subset=["date"])
-
-    return cleaned_df
-
-
-def last_7_days_df(df: pd.DataFrame) -> pd.DataFrame:
-    cleaned_df = clean_date_column(df)
-
-    if cleaned_df.empty:
-        return cleaned_df
-
-    today = pd.Timestamp.today().normalize()
-    week_start = today - pd.Timedelta(days=6)
-
-    return cleaned_df[
-        (cleaned_df["date"] >= week_start) &
-        (cleaned_df["date"] <= today)
-    ].copy()
-
-
-def is_sparring_row(row: pd.Series) -> bool:
-    session_type = str(row.get("session_type", "")).lower()
-    activities = str(row.get("activities", "")).lower()
-    sparring = str(row.get("sparring", "")).lower()
-
-    return (
-        "sparring" in session_type
-        or "sparring" in activities
-        or sparring == "yes"
-    )
-
-
-def get_total_sparring_rounds(boxing_df: pd.DataFrame) -> int:
-    if boxing_df.empty:
-        return 0
-
-    df = boxing_df.copy()
-
-    if "rounds" not in df.columns:
-        return 0
-
-    df["rounds"] = pd.to_numeric(df["rounds"], errors="coerce").fillna(0)
-
-    sparring_df = df[df.apply(is_sparring_row, axis=1)]
-
-    if sparring_df.empty:
-        return 0
-
-    return int(sparring_df["rounds"].sum())
-
-
-def get_total_sparring_sessions(boxing_df: pd.DataFrame) -> int:
-    if boxing_df.empty:
-        return 0
-
-    sparring_df = boxing_df[boxing_df.apply(is_sparring_row, axis=1)]
-
-    return len(sparring_df)
-
-
-def build_achievements(
-    weight_df: pd.DataFrame,
-    runs_df: pd.DataFrame,
-    boxing_df: pd.DataFrame,
-    gym_df: pd.DataFrame,
-    current_weight: float,
-    start_weight: float,
-    goal_weight: float,
-) -> list[dict]:
-    weight_df = clean_date_column(weight_df)
-    runs_df = clean_date_column(runs_df)
-    boxing_df = clean_date_column(boxing_df)
-    gym_df = clean_date_column(gym_df)
-
-    weight_week_df = last_7_days_df(weight_df)
-    runs_week_df = last_7_days_df(runs_df)
-    boxing_week_df = last_7_days_df(boxing_df)
-    gym_week_df = last_7_days_df(gym_df)
-
-    total_weight_logs = len(weight_df)
-    total_runs = len(runs_df)
-    total_boxing_sessions = len(boxing_df)
-    total_gym_sessions = len(gym_df)
-
-    weekly_weight_logs = len(weight_week_df)
-    weekly_runs = len(runs_week_df)
-    weekly_boxing_sessions = len(boxing_week_df)
-    weekly_gym_sessions = len(gym_week_df)
-
-    total_logs = total_weight_logs + total_runs + total_boxing_sessions + total_gym_sessions
-
-    if not runs_df.empty and "distance_km" in runs_df.columns:
-        runs_df = runs_df.copy()
-        runs_df["distance_km"] = pd.to_numeric(
-            runs_df["distance_km"],
-            errors="coerce",
-        ).fillna(0)
-        total_run_distance = float(runs_df["distance_km"].sum())
-        longest_run = float(runs_df["distance_km"].max())
-    else:
-        total_run_distance = 0.0
-        longest_run = 0.0
-
-    if current_weight > 0:
-        weight_lost = max(start_weight - current_weight, 0.0)
-        under_85_now = current_weight < 85.0
-        goal_reached_now = current_weight <= goal_weight
-    else:
-        weight_lost = 0.0
-        under_85_now = False
-        goal_reached_now = False
-
-    total_sparring_sessions = get_total_sparring_sessions(boxing_df)
-    total_sparring_rounds = get_total_sparring_rounds(boxing_df)
-
-    balanced_week = (
-        weekly_weight_logs >= 1
-        and weekly_runs >= 1
-        and weekly_boxing_sessions >= 2
-    )
-
-    full_athlete_week = (
-        weekly_weight_logs >= 1
-        and weekly_runs >= 2
-        and weekly_boxing_sessions >= 4
-        and weekly_gym_sessions >= 2
-    )
-
-    return [
-        {
-            "id": "general_first_log",
-            "category": "General",
-            "name": "Journey started",
-            "detail": "Logged your first entry in the app.",
-            "kind": "Milestone",
-            "unlocked": total_logs >= 1,
-        },
-        {
-            "id": "general_30_logs",
-            "category": "General",
-            "name": "30 total logs",
-            "detail": "Reached 30 total logs across the app.",
-            "kind": "Milestone",
-            "unlocked": total_logs >= 30,
-        },
-        {
-            "id": "general_balanced_week",
-            "category": "General",
-            "name": "Balanced week",
-            "detail": "Weight, running, and boxing all logged this week.",
-            "kind": "Active",
-            "unlocked": balanced_week,
-        },
-        {
-            "id": "general_full_athlete_week",
-            "category": "General",
-            "name": "Full athlete week",
-            "detail": "Weight, boxing, running, and gym goals active this week.",
-            "kind": "Active",
-            "unlocked": full_athlete_week,
-        },
-        {
-            "id": "weight_first_weigh_in",
-            "category": "Weight",
-            "name": "First weigh-in",
-            "detail": "Logged your first bodyweight entry.",
-            "kind": "Milestone",
-            "unlocked": total_weight_logs >= 1,
-        },
-        {
-            "id": "weight_logged_this_week",
-            "category": "Weight",
-            "name": "Weight checked this week",
-            "detail": "Logged weight at least once in the last 7 days.",
-            "kind": "Active",
-            "unlocked": weekly_weight_logs >= 1,
-        },
-        {
-            "id": "weight_7_logs",
-            "category": "Weight",
-            "name": "7 weigh-ins",
-            "detail": "Logged bodyweight 7 times.",
-            "kind": "Milestone",
-            "unlocked": total_weight_logs >= 7,
-        },
-        {
-            "id": "weight_lost_1kg",
-            "category": "Weight",
-            "name": "Lost 1 kg",
-            "detail": "Dropped at least 1 kg from start weight.",
-            "kind": "Milestone",
-            "unlocked": weight_lost >= 1.0,
-        },
-        {
-            "id": "weight_lost_5kg",
-            "category": "Weight",
-            "name": "Lost 5 kg",
-            "detail": "Dropped at least 5 kg from start weight.",
-            "kind": "Milestone",
-            "unlocked": weight_lost >= 5.0,
-        },
-        {
-            "id": "weight_under_85",
-            "category": "Weight",
-            "name": "Under 85 kg",
-            "detail": "Current logged weight is under 85 kg.",
-            "kind": "Active",
-            "unlocked": under_85_now,
-        },
-        {
-            "id": "weight_goal_reached",
-            "category": "Weight",
-            "name": "Goal weight reached",
-            "detail": "Current logged weight is at or below goal weight.",
-            "kind": "Active",
-            "unlocked": goal_reached_now,
-        },
-        {
-            "id": "run_first_run",
-            "category": "Running",
-            "name": "First run",
-            "detail": "Logged your first roadwork session.",
-            "kind": "Milestone",
-            "unlocked": total_runs >= 1,
-        },
-        {
-            "id": "run_active_week",
-            "category": "Running",
-            "name": "Roadwork active",
-            "detail": "Logged at least one run in the last 7 days.",
-            "kind": "Active",
-            "unlocked": weekly_runs >= 1,
-        },
-        {
-            "id": "run_2_in_week",
-            "category": "Running",
-            "name": "2 runs in 7 days",
-            "detail": "Logged two or more runs in the last 7 days.",
-            "kind": "Active",
-            "unlocked": weekly_runs >= 2,
-        },
-        {
-            "id": "run_10km_total",
-            "category": "Running",
-            "name": "10 km total",
-            "detail": "Reached 10 total running kilometers.",
-            "kind": "Milestone",
-            "unlocked": total_run_distance >= 10.0,
-        },
-        {
-            "id": "run_50km_total",
-            "category": "Running",
-            "name": "50 km total",
-            "detail": "Reached 50 total running kilometers.",
-            "kind": "Milestone",
-            "unlocked": total_run_distance >= 50.0,
-        },
-        {
-            "id": "run_first_5k",
-            "category": "Running",
-            "name": "First 5 km run",
-            "detail": "Logged a single run of 5 km or longer.",
-            "kind": "Milestone",
-            "unlocked": longest_run >= 5.0,
-        },
-        {
-            "id": "boxing_first_session",
-            "category": "Boxing",
-            "name": "First boxing session",
-            "detail": "Logged your first boxing session.",
-            "kind": "Milestone",
-            "unlocked": total_boxing_sessions >= 1,
-        },
-        {
-            "id": "boxing_active_week",
-            "category": "Boxing",
-            "name": "Boxing active week",
-            "detail": "Logged at least two boxing sessions in the last 7 days.",
-            "kind": "Active",
-            "unlocked": weekly_boxing_sessions >= 2,
-        },
-        {
-            "id": "boxing_full_week",
-            "category": "Boxing",
-            "name": "Full boxing week",
-            "detail": "Logged four or more boxing sessions in the last 7 days.",
-            "kind": "Active",
-            "unlocked": weekly_boxing_sessions >= 4,
-        },
-        {
-            "id": "boxing_10_sessions",
-            "category": "Boxing",
-            "name": "10 boxing sessions",
-            "detail": "Logged 10 boxing sessions.",
-            "kind": "Milestone",
-            "unlocked": total_boxing_sessions >= 10,
-        },
-        {
-            "id": "boxing_first_sparring",
-            "category": "Boxing",
-            "name": "First sparring logged",
-            "detail": "Logged your first sparring session.",
-            "kind": "Milestone",
-            "unlocked": total_sparring_sessions >= 1,
-        },
-        {
-            "id": "boxing_25_sparring_rounds",
-            "category": "Boxing",
-            "name": "25 sparring rounds",
-            "detail": "Reached 25 total sparring rounds.",
-            "kind": "Milestone",
-            "unlocked": total_sparring_rounds >= 25,
-        },
-        {
-            "id": "gym_first_session",
-            "category": "Gym",
-            "name": "First gym session",
-            "detail": "Logged your first gym session.",
-            "kind": "Milestone",
-            "unlocked": total_gym_sessions >= 1,
-        },
-        {
-            "id": "gym_active_week",
-            "category": "Gym",
-            "name": "Gym active week",
-            "detail": "Logged at least one gym session in the last 7 days.",
-            "kind": "Active",
-            "unlocked": weekly_gym_sessions >= 1,
-        },
-        {
-            "id": "gym_2_in_week",
-            "category": "Gym",
-            "name": "2 gym sessions in 7 days",
-            "detail": "Logged two or more gym sessions in the last 7 days.",
-            "kind": "Active",
-            "unlocked": weekly_gym_sessions >= 2,
-        },
-        {
-            "id": "gym_10_sessions",
-            "category": "Gym",
-            "name": "10 gym sessions",
-            "detail": "Logged 10 gym sessions.",
-            "kind": "Milestone",
-            "unlocked": total_gym_sessions >= 10,
-        },
-    ]
-
+# ============================================================
+# ACHIEVEMENT RENDERING
+# ============================================================
 
 def render_achievement_badge(achievement: dict) -> str:
     unlocked = bool(achievement["unlocked"])
     locked_class = "" if unlocked else " locked"
+
     kind = escape(str(achievement["kind"]))
     name = escape(str(achievement["name"]))
     detail = escape(str(achievement["detail"]))
 
-    return f"""
-<div class="home-achievement-badge{locked_class}">
-<div class="home-achievement-kind">{kind}</div>
-<div class="home-achievement-name">{name}</div>
-<div class="home-achievement-detail">{detail}</div>
-</div>
-"""
+    return (
+        f'<div class="home-achievement-badge{locked_class}">'
+        f'<div class="home-achievement-kind">{kind}</div>'
+        f'<div class="home-achievement-name">{name}</div>'
+        f'<div class="home-achievement-detail">{detail}</div>'
+        f'</div>'
+    )
 
 
 def achievement_popup_html(achievement: dict) -> str:
     name = escape(str(achievement["name"]))
     detail = escape(str(achievement["detail"]))
 
-    return f"""
-<div class="achievement-popup">
-<div class="achievement-popup-top">Achievement unlocked</div>
-<div class="achievement-popup-title">{name}</div>
-<div class="achievement-popup-detail">{detail}</div>
-</div>
-"""
+    return (
+        f'<div class="achievement-popup">'
+        f'<div class="achievement-popup-top">Achievement unlocked</div>'
+        f'<div class="achievement-popup-title">{name}</div>'
+        f'<div class="achievement-popup-detail">{detail}</div>'
+        f'</div>'
+    )
 
 
 def render_achievement_dialog(achievements: list[dict]) -> None:
@@ -458,15 +122,16 @@ def render_achievement_dialog(achievements: list[dict]) -> None:
     total_count = len(achievements)
 
     st.markdown(
-        f"""
-<div class="achievement-dialog-header">
-<div class="achievement-dialog-eyebrow">ACHIEVEMENTS</div>
-<div class="achievement-dialog-title">{unlocked_count}/{total_count} unlocked</div>
-<div class="achievement-dialog-subtitle">
-Active badges can disappear again if the condition is no longer true. Milestone badges stay unlocked as long as the data proves you reached them.
-</div>
-</div>
-""",
+        (
+            f'<div class="achievement-dialog-header">'
+            f'<div class="achievement-dialog-eyebrow">ACHIEVEMENTS</div>'
+            f'<div class="achievement-dialog-title">{unlocked_count}/{total_count} unlocked</div>'
+            f'<div class="achievement-dialog-subtitle">'
+            f'Active badges can disappear again if the condition is no longer true. '
+            f'Milestone badges stay unlocked as long as the data proves you reached them.'
+            f'</div>'
+            f'</div>'
+        ),
         unsafe_allow_html=True,
     )
 
@@ -488,14 +153,12 @@ Active badges can disappear again if the condition is no longer true. Milestone 
         )
 
         st.markdown(
-            f"""
-<div class="achievement-section">
-<div class="achievement-section-title">{category}</div>
-<div class="achievement-section-grid">
-{badges_html}
-</div>
-</div>
-""",
+            (
+                f'<div class="achievement-section">'
+                f'<div class="achievement-section-title">{category}</div>'
+                f'<div class="achievement-section-grid">{badges_html}</div>'
+                f'</div>'
+            ),
             unsafe_allow_html=True,
         )
 
@@ -541,7 +204,9 @@ def handle_new_achievement_popup(achievements: list[dict]) -> None:
     st.session_state[state_key] = list(current_unlocked_ids)
 
 
-load_css("assets/styles.css")
+# ============================================================
+# PAGE CSS
+# ============================================================
 
 st.markdown(
     """
@@ -758,7 +423,9 @@ st.markdown(
 )
 
 
+# ============================================================
 # DATA
+# ============================================================
 
 settings = load_settings()
 
@@ -810,7 +477,7 @@ gym_card_note = (
     else "No session logged"
 )
 
-achievements = build_achievements(
+achievements = build_data_achievements(
     weight_df=weight_df,
     runs_df=runs_df,
     boxing_df=boxing_df,
@@ -851,7 +518,9 @@ next_milestone, milestone_remaining = calculate_next_milestone(
 )
 
 
+# ============================================================
 # QUOTE SPLASH
+# ============================================================
 
 skip_splash = st.query_params.get("skip_splash") == "true"
 
@@ -865,18 +534,14 @@ show_quote_splash = not st.session_state.quote_splash_seen
 
 if show_quote_splash:
     st.markdown(
-        f"""
-<div class="quote-splash">
-<div class="quote-splash-content">
-<div class="quote-splash-text">
-❝ {quote} ❞
-</div>
-<div class="quote-splash-author">
-— {author}
-</div>
-</div>
-</div>
-""",
+        (
+            f'<div class="quote-splash">'
+            f'<div class="quote-splash-content">'
+            f'<div class="quote-splash-text">❝ {quote} ❞</div>'
+            f'<div class="quote-splash-author">— {author}</div>'
+            f'</div>'
+            f'</div>'
+        ),
         unsafe_allow_html=True,
     )
 
@@ -885,101 +550,92 @@ if show_quote_splash:
 card_wait_class = ""
 logo_wait_class = "splash-wait" if show_quote_splash else ""
 
+
+# ============================================================
 # PAGE
+# ============================================================
 
 st.markdown('<div class="dashboard-wrapper">', unsafe_allow_html=True)
 
 handle_new_achievement_popup(achievements)
 
 
+# ============================================================
 # HERO
+# ============================================================
 
 countup_delay_ms = 4200 if show_quote_splash else 500
 
-glove_trace_path = """
-M 103.6 28.5
-L 93.4 33.8
-L 86.4 45.5
-L 83.1 62.7
-L 84.9 79.9
-L 80.8 88.8
-L 78.9 99.1
-L 81.8 102.6
-L 112.4 110.6
-L 118.0 105.0
-L 121.6 94.0
-L 121.2 90.4
-L 132.5 81.1
-L 138.9 73.2
-L 142.7 64.5
-L 143.4 56.7
-L 141.4 52.1
-L 135.8 49.1
-L 135.5 40.4
-L 131.1 35.1
-L 114.4 29.4
-Z
-"""
+glove_trace_path = (
+    "M 103.6 28.5 "
+    "L 93.4 33.8 "
+    "L 86.4 45.5 "
+    "L 83.1 62.7 "
+    "L 84.9 79.9 "
+    "L 80.8 88.8 "
+    "L 78.9 99.1 "
+    "L 81.8 102.6 "
+    "L 112.4 110.6 "
+    "L 118.0 105.0 "
+    "L 121.6 94.0 "
+    "L 121.2 90.4 "
+    "L 132.5 81.1 "
+    "L 138.9 73.2 "
+    "L 142.7 64.5 "
+    "L 143.4 56.7 "
+    "L 141.4 52.1 "
+    "L 135.8 49.1 "
+    "L 135.5 40.4 "
+    "L 131.1 35.1 "
+    "L 114.4 29.4 "
+    "Z"
+)
 
 st.markdown(
-    f"""
-<div class="hero-container">
-<div class="hero-logo-wrap {logo_wait_class}">
-<img class="hero-logo" src="data:image/png;base64,{logo_base64}" alt="Boxing Journey logo">
-
-<svg class="hero-logo-trace" viewBox="0 0 220 147" aria-hidden="true">
-    <path
-        class="hero-trace-path"
-        d="{glove_trace_path}"
-        pathLength="100"
-    />
-</svg>
-</div>
-
-<div>
-<div class="hero-title">{APP_NAME} <span>{APP_YEAR}</span></div>
-<div class="hero-subtitle">{greeting}</div>
-<div class="hero-date">{today_label}</div>
-</div>
-</div>
-""",
+    (
+        f'<div class="hero-container">'
+        f'<div class="hero-logo-wrap {logo_wait_class}">'
+        f'<img class="hero-logo" src="data:image/png;base64,{logo_base64}" alt="Boxing Journey logo">'
+        f'<svg class="hero-logo-trace" viewBox="0 0 220 147" aria-hidden="true">'
+        f'<path class="hero-trace-path" d="{glove_trace_path}" pathLength="100" />'
+        f'</svg>'
+        f'</div>'
+        f'<div>'
+        f'<div class="hero-title">{APP_NAME} <span>{APP_YEAR}</span></div>'
+        f'<div class="hero-subtitle">{greeting}</div>'
+        f'<div class="hero-date">{today_label}</div>'
+        f'</div>'
+        f'</div>'
+    ),
     unsafe_allow_html=True,
 )
 
 st.markdown('<div class="hero-divider"></div>', unsafe_allow_html=True)
 
 
+# ============================================================
 # SETTINGS + STATS + BADGES BUTTONS
+# ============================================================
 
 st.markdown(
-    """
-<a class="settings-button" href="/settings" target="_self" title="Settings">
-⚙
-</a>
-""",
+    '<a class="settings-button" href="/settings" target="_self" title="Settings">⚙</a>',
     unsafe_allow_html=True,
 )
 
 st.markdown(
-    """
-<a class="top-action-button statistics-button" href="/statistics" target="_self" title="Statistics">
-Stats
-</a>
-""",
+    '<a class="top-action-button statistics-button" href="/statistics" target="_self" title="Statistics">Stats</a>',
     unsafe_allow_html=True,
 )
 
 st.markdown(
-    """
-<a class="top-action-button achievements-button" href="/?show_achievements=true" target="_self" title="Achievements">
-Badges
-</a>
-""",
+    '<a class="top-action-button achievements-button" href="/?show_achievements=true" target="_self" title="Achievements">Badges</a>',
     unsafe_allow_html=True,
 )
 
 
+# ============================================================
 # LAST 7 DAYS OVERVIEW
+# ============================================================
 
 weekly_overview(
     last_7_day_weight_change,
@@ -992,7 +648,9 @@ weekly_overview(
 st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 
+# ============================================================
 # MAIN CARDS
+# ============================================================
 
 col1, spacer1, col2 = st.columns([1, 0.06, 1])
 
@@ -1039,59 +697,49 @@ with col4:
 st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 
+# ============================================================
 # GOAL CARD
+# ============================================================
 
 st.markdown(
-    f"""
-<div class="home-goal-card fade-in fade-delay-4 {card_wait_class}">
-<div class="home-goal-eyebrow">GOAL PROGRESS</div>
-
-<div class="home-goal-grid">
-<div>
-<div class="home-goal-label">Current</div>
-<div class="home-goal-value">{current_weight:.1f} kg</div>
-</div>
-
-<div>
-<div class="home-goal-label">Goal</div>
-<div class="home-goal-value">{goal_weight:.1f} kg</div>
-</div>
-
-<div>
-<div class="home-goal-label">Remaining</div>
-<div class="home-goal-value">{remaining_kg:.1f} kg</div>
-</div>
-
-<div>
-<div class="home-goal-label">Next milestone</div>
-<div class="home-goal-value">{next_milestone:.1f} kg</div>
-<div class="home-goal-muted">{milestone_remaining:.1f} kg away</div>
-</div>
-</div>
-
-<div class="home-goal-progress-top">
-<span>{progress_percent:.0f}% completed</span>
-<span>{current_weight:.1f} kg → {goal_weight:.1f} kg</span>
-</div>
-
-<div class="home-goal-progress-track">
-<div class="home-goal-progress-fill" style="width: {progress_percent:.0f}%;"></div>
-</div>
-</div>
-""",
+    (
+        f'<div class="home-goal-card fade-in fade-delay-4 {card_wait_class}">'
+        f'<div class="home-goal-eyebrow">GOAL PROGRESS</div>'
+        f'<div class="home-goal-grid">'
+        f'<div><div class="home-goal-label">Current</div><div class="home-goal-value">{current_weight:.1f} kg</div></div>'
+        f'<div><div class="home-goal-label">Goal</div><div class="home-goal-value">{goal_weight:.1f} kg</div></div>'
+        f'<div><div class="home-goal-label">Remaining</div><div class="home-goal-value">{remaining_kg:.1f} kg</div></div>'
+        f'<div><div class="home-goal-label">Next milestone</div><div class="home-goal-value">{next_milestone:.1f} kg</div><div class="home-goal-muted">{milestone_remaining:.1f} kg away</div></div>'
+        f'</div>'
+        f'<div class="home-goal-progress-top">'
+        f'<span>{progress_percent:.0f}% completed</span>'
+        f'<span>{current_weight:.1f} kg → {goal_weight:.1f} kg</span>'
+        f'</div>'
+        f'<div class="home-goal-progress-track">'
+        f'<div class="home-goal-progress-fill" style="width: {progress_percent:.0f}%;"></div>'
+        f'</div>'
+        f'</div>'
+    ),
     unsafe_allow_html=True,
 )
 
 st.markdown('<div class="section-gap-large"></div>', unsafe_allow_html=True)
 
 
+# ============================================================
 # QUOTE
+# ============================================================
 
 quote_card(
     quote,
     author,
     animation_class=f"fade-in fade-delay-5 {card_wait_class}",
 )
+
+
+# ============================================================
+# COUNT-UP ANIMATION
+# ============================================================
 
 components.html(
     f"""
