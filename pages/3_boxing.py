@@ -164,6 +164,223 @@ st.markdown(
     font-size: 14px;
     line-height: 1.45;
 }
+
+.polish-card {
+    border: 1px solid rgba(201, 162, 39, 0.16);
+    background:
+        radial-gradient(circle at top left, rgba(201, 162, 39, 0.10), transparent 34%),
+        linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018));
+    border-radius: 20px;
+    padding: 18px 20px;
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.22),
+        inset 0 0 0 1px rgba(255,255,255,0.025);
+    margin-top: 16px;
+}
+
+.polish-eyebrow {
+    color: rgba(201, 162, 39, 0.92);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.polish-title {
+    color: rgba(245, 245, 245, 0.94);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+}
+
+.polish-subtitle {
+    color: rgba(245, 245, 245, 0.58);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.polish-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.level-bar-shell {
+    width: 100%;
+    height: 11px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+    margin-top: 14px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.35);
+}
+
+.level-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(201, 162, 39, 0.55), rgba(255, 222, 103, 0.95));
+    box-shadow: 0 0 18px rgba(201, 162, 39, 0.35);
+    animation: levelFill 1.05s ease-out forwards;
+}
+
+@keyframes levelFill {
+    from {
+        width: 0%;
+    }
+    to {
+        width: var(--level-width);
+    }
+}
+
+.level-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.level-label {
+    color: rgba(245,245,245,0.70);
+    font-size: 13px;
+}
+
+.level-value {
+    color: rgba(245,245,245,0.95);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.streak-card {
+    border: 1px solid rgba(201, 162, 39, 0.16);
+    background: rgba(255,255,255,0.035);
+    border-radius: 18px;
+    padding: 15px 16px;
+}
+
+.streak-number {
+    color: rgba(245,245,245,0.96);
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.8px;
+}
+
+.streak-label {
+    color: rgba(201, 162, 39, 0.88);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.streak-detail {
+    color: rgba(245,245,245,0.56);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.achievement-badge {
+    border: 1px solid rgba(201, 162, 39, 0.22);
+    background: rgba(201, 162, 39, 0.065);
+    color: rgba(245,245,245,0.84);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.achievement-badge.locked {
+    border-color: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.025);
+    color: rgba(245,245,245,0.38);
+}
+
+.achievement-popup {
+    position: fixed;
+    right: 26px;
+    bottom: 28px;
+    z-index: 9999;
+    min-width: 280px;
+    max-width: 360px;
+    border: 1px solid rgba(201, 162, 39, 0.45);
+    background:
+        radial-gradient(circle at top left, rgba(201, 162, 39, 0.18), transparent 36%),
+        linear-gradient(145deg, rgba(18,18,18,0.98), rgba(6,6,6,0.98));
+    border-radius: 18px;
+    padding: 16px 18px;
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.55),
+        0 0 26px rgba(201, 162, 39, 0.18),
+        inset 0 0 0 1px rgba(255,255,255,0.035);
+    animation: achievementPop 4.2s ease-in-out forwards;
+}
+
+.achievement-popup-top {
+    color: rgba(201, 162, 39, 0.95);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.achievement-popup-title {
+    color: rgba(245,245,245,0.96);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.25px;
+}
+
+.achievement-popup-detail {
+    color: rgba(245,245,245,0.56);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+@keyframes achievementPop {
+    0% {
+        opacity: 0;
+        transform: translateX(34px) translateY(8px) scale(0.96);
+    }
+    10% {
+        opacity: 1;
+        transform: translateX(0) translateY(0) scale(1);
+    }
+    78% {
+        opacity: 1;
+        transform: translateX(0) translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(34px) translateY(8px) scale(0.96);
+    }
+}
+
+.soft-appear {
+    animation: softAppear 0.45s ease-out both;
+}
+
+@keyframes softAppear {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -305,6 +522,112 @@ def get_consistency_status(weekly_sessions: int) -> tuple[str, str, str]:
     return "sad", "Bad", "0–1 sessions in the last 7 days"
 
 
+def calculate_weekly_streaks(df: pd.DataFrame, weekly_goal: int = 4) -> tuple[int, int]:
+    if df.empty:
+        return 0, 0
+
+    streak_df = df.copy()
+    streak_df["week_start"] = (
+        streak_df["date"] - pd.to_timedelta(streak_df["date"].dt.weekday, unit="D")
+    ).dt.normalize()
+
+    weekly_counts = (
+        streak_df.groupby("week_start")
+        .size()
+        .reset_index(name="sessions")
+        .sort_values("week_start")
+    )
+
+    if weekly_counts.empty:
+        return 0, 0
+
+    first_week = weekly_counts["week_start"].min()
+    current_week = pd.Timestamp(date.today())
+    current_week = current_week - pd.to_timedelta(current_week.weekday(), unit="D")
+    current_week = current_week.normalize()
+
+    all_weeks = pd.date_range(first_week, current_week, freq="W-MON")
+
+    week_map = dict(
+        zip(
+            weekly_counts["week_start"],
+            weekly_counts["sessions"],
+        )
+    )
+
+    completed_flags = [
+        week_map.get(week_start, 0) >= weekly_goal
+        for week_start in all_weeks
+    ]
+
+    best_streak = 0
+    running_streak = 0
+
+    for completed in completed_flags:
+        if completed:
+            running_streak += 1
+            best_streak = max(best_streak, running_streak)
+        else:
+            running_streak = 0
+
+    current_streak = 0
+
+    for completed in reversed(completed_flags):
+        if completed:
+            current_streak += 1
+        else:
+            break
+
+    return current_streak, best_streak
+
+
+def build_boxing_achievements(
+    total_sessions: int,
+    total_sparring_rounds: int,
+    total_sparring_sessions: int,
+    weekly_sessions: int,
+    best_streak: int,
+) -> list[dict]:
+    return [
+        {
+            "id": "boxing_first_session",
+            "name": "First boxing session",
+            "unlocked": total_sessions >= 1,
+            "detail": "You logged your first boxing session.",
+        },
+        {
+            "id": "boxing_10_sessions",
+            "name": "10 boxing sessions",
+            "unlocked": total_sessions >= 10,
+            "detail": "You logged 10 boxing sessions.",
+        },
+        {
+            "id": "boxing_first_sparring",
+            "name": "First sparring logged",
+            "unlocked": total_sparring_sessions >= 1,
+            "detail": "You logged your first sparring session.",
+        },
+        {
+            "id": "boxing_25_sparring_rounds",
+            "name": "25 sparring rounds",
+            "unlocked": total_sparring_rounds >= 25,
+            "detail": "You reached 25 total sparring rounds.",
+        },
+        {
+            "id": "boxing_full_week",
+            "name": "Full boxing week",
+            "unlocked": weekly_sessions >= 4,
+            "detail": "You logged 4 sessions in the last 7 days.",
+        },
+        {
+            "id": "boxing_3_week_streak",
+            "name": "3-week streak",
+            "unlocked": best_streak >= 3,
+            "detail": "You completed 3 strong boxing weeks.",
+        },
+    ]
+
+
 def consistency_face_html(status: str) -> str:
     return f"""
 <div class="consistency-face-wrap">
@@ -313,6 +636,106 @@ def consistency_face_html(status: str) -> str:
 <div class="face-eye face-eye-right"></div>
 <div class="face-mouth"></div>
 </div>
+</div>
+"""
+
+
+def level_bar_html(
+    eyebrow: str,
+    title: str,
+    percentage: float,
+    label: str,
+    detail: str,
+) -> str:
+    percentage = max(0, min(float(percentage), 100))
+
+    return f"""
+<div class="polish-card soft-appear">
+<div class="polish-eyebrow">{escape(eyebrow)}</div>
+<div class="polish-title">{escape(title)}</div>
+<div class="polish-subtitle">{escape(detail)}</div>
+
+<div class="level-bar-shell">
+<div class="level-bar-fill" style="--level-width: {percentage:.1f}%;"></div>
+</div>
+
+<div class="level-row">
+<div class="level-label">{escape(label)}</div>
+<div class="level-value">{percentage:.0f}%</div>
+</div>
+</div>
+"""
+
+
+def streak_card_html(
+    eyebrow: str,
+    title: str,
+    current_streak: int,
+    best_streak: int,
+    detail: str,
+) -> str:
+    return f"""
+<div class="polish-card soft-appear">
+<div class="polish-eyebrow">{escape(eyebrow)}</div>
+<div class="polish-title">{escape(title)}</div>
+<div class="polish-subtitle">{escape(detail)}</div>
+
+<div class="polish-grid">
+<div class="streak-card">
+<div class="streak-label">Current streak</div>
+<div class="streak-number">{current_streak}</div>
+<div class="streak-detail">weeks</div>
+</div>
+
+<div class="streak-card">
+<div class="streak-label">Best streak</div>
+<div class="streak-number">{best_streak}</div>
+<div class="streak-detail">weeks</div>
+</div>
+</div>
+</div>
+"""
+
+
+def achievement_badges_html(
+    eyebrow: str,
+    title: str,
+    detail: str,
+    achievements: list[dict],
+) -> str:
+    badge_html = ""
+
+    for achievement in achievements:
+        name = escape(str(achievement["name"]))
+        unlocked = bool(achievement["unlocked"])
+        locked_class = "" if unlocked else " locked"
+
+        badge_html += f'<span class="achievement-badge{locked_class}">{name}</span>'
+
+    return f"""
+<div class="polish-card soft-appear">
+<div class="polish-eyebrow">{escape(eyebrow)}</div>
+<div class="polish-title">{escape(title)}</div>
+<div class="polish-subtitle">{escape(detail)}</div>
+
+<div class="badge-row">
+{badge_html}
+</div>
+</div>
+"""
+
+
+def achievement_popup_html(name: str, detail: str = "") -> str:
+    detail_html = ""
+
+    if detail:
+        detail_html = f'<div class="achievement-popup-detail">{escape(detail)}</div>'
+
+    return f"""
+<div class="achievement-popup">
+<div class="achievement-popup-top">Achievement unlocked</div>
+<div class="achievement-popup-title">{escape(name)}</div>
+{detail_html}
 </div>
 """
 
@@ -628,8 +1051,14 @@ sparring_df = (
     else boxing_df.copy()
 )
 
+total_sparring_sessions = len(sparring_df)
 total_sparring_rounds = int(sparring_df["rounds"].sum()) if not sparring_df.empty else 0
 sparring_text = "Done" if sparring_completed else "Not yet"
+
+current_streak, best_streak = calculate_weekly_streaks(
+    boxing_df,
+    weekly_goal=4,
+)
 
 st.markdown(
     f"""
@@ -692,6 +1121,72 @@ st.markdown(
 """,
     unsafe_allow_html=True,
 )
+
+weekly_level_percentage = min((weekly_sessions / 4) * 100, 100)
+
+st.markdown(
+    level_bar_html(
+        eyebrow="BOXING LEVEL",
+        title="Weekly training level",
+        percentage=weekly_level_percentage,
+        label=f"{weekly_sessions}/4 sessions completed",
+        detail="Based on boxing sessions logged in the last 7 days.",
+    ),
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    streak_card_html(
+        eyebrow="CONSISTENCY STREAK",
+        title="Weekly boxing streak",
+        current_streak=current_streak,
+        best_streak=best_streak,
+        detail="A streak week means 4 or more boxing sessions logged.",
+    ),
+    unsafe_allow_html=True,
+)
+
+boxing_achievements = build_boxing_achievements(
+    total_sessions=total_sessions,
+    total_sparring_rounds=total_sparring_rounds,
+    total_sparring_sessions=total_sparring_sessions,
+    weekly_sessions=weekly_sessions,
+    best_streak=best_streak,
+)
+
+unlocked_achievement_ids = {
+    achievement["id"]
+    for achievement in boxing_achievements
+    if achievement["unlocked"]
+}
+
+seen_key = "seen_boxing_achievements"
+
+if seen_key not in st.session_state:
+    st.session_state[seen_key] = list(unlocked_achievement_ids)
+
+seen_achievement_ids = set(st.session_state[seen_key])
+new_achievement_ids = unlocked_achievement_ids - seen_achievement_ids
+
+if new_achievement_ids:
+    new_achievement = next(
+        achievement
+        for achievement in boxing_achievements
+        if achievement["id"] in new_achievement_ids
+    )
+
+    st.markdown(
+        achievement_popup_html(
+            name=new_achievement["name"],
+            detail=new_achievement["detail"],
+        ),
+        unsafe_allow_html=True,
+    )
+
+    st.session_state[seen_key] = list(
+        seen_achievement_ids | new_achievement_ids
+    )
+
 
 if not boxing_df.empty:
     latest_session = boxing_df.iloc[-1]
